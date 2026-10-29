@@ -38,6 +38,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.outlined.Gavel
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Groups
@@ -229,6 +230,8 @@ fun SettingsScreen(container: AppContainer, insets: PaddingValues, onOpenPage: (
 
         Section("Other") {
             SettingRow(icon = Icons.Outlined.HelpOutline, title = "How it works", onClick = { onOpenPage(MainActivity.PAGE_HOW) }) { Value(null) }
+            Divider()
+            SettingRow(icon = Icons.Outlined.Gavel, title = "Terms", onClick = { onOpenPage(MainActivity.PAGE_TERMS) }) { Value(null) }
             Divider()
             SettingRow(icon = Icons.Outlined.BugReport, title = "Report a bug", onClick = { sendFeedback(context, "Bug report") }) { Value(null) }
             Divider()

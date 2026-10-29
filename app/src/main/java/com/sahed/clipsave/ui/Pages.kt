@@ -39,11 +39,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sahed.clipsave.core.Platform
 import com.sahed.clipsave.core.Prefs
 import com.sahed.clipsave.ui.theme.ClipType
+import com.sahed.clipsave.ui.theme.GlassButton
 import com.sahed.clipsave.ui.theme.GlassIconButton
 import com.sahed.clipsave.ui.theme.LocalClipColors
 import com.sahed.clipsave.ui.theme.Radius
@@ -108,6 +110,43 @@ fun HowItWorksScreen(onBack: () -> Unit) {
         }
         Spacer(Modifier.height(8.dp))
         Text("Save only what you have the right to.", style = ClipType.Caption, color = c.inkMuted)
+    }
+}
+
+private const val REPO_URL = "https://github.com/sahedulislamrony/ClipSave"
+
+/** Kept short on purpose; the full text is TERMS.md in the repository. */
+private val TERMS = listOf(
+    "You choose what to save, and you are responsible for it.",
+    "Only save content you own, that is public domain or openly licensed, or that you have permission to save.",
+    "Follow copyright law, the terms of the sites you use, and the laws where you live. They differ by country.",
+    "Don't use ClipSave to bypass DRM, paywalls or access controls, or to share other people's work without permission.",
+    "ClipSave is free software provided \"as is\", without warranty. The developers are not liable for how it is used, to the extent the law allows.",
+    "ClipSave is not affiliated with Instagram, Facebook, YouTube, TikTok, X or any other service.",
+)
+
+/** The terms a user accepts on first launch; shown on Welcome and under Settings › Other › Terms. */
+@Composable
+fun TermsBody() {
+    val c = LocalClipColors.current
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        TERMS.forEach { line ->
+            Row {
+                Text("•", style = ClipType.BodyStrong, color = c.primary, modifier = Modifier.width(16.dp))
+                Text(line, style = ClipType.BodyStrong, color = c.ink)
+            }
+        }
+    }
+}
+
+@Composable
+fun TermsScreen(onBack: () -> Unit) {
+    val uri = LocalUriHandler.current
+    PageScaffold("Terms", onBack) {
+        TermsBody()
+        Spacer(Modifier.height(8.dp))
+        GlassButton("Full terms", { uri.openUri("$REPO_URL/blob/main/TERMS.md") }, Modifier.fillMaxWidth(), height = 48.dp)
+        GlassButton("Source code & license", { uri.openUri(REPO_URL) }, Modifier.fillMaxWidth(), height = 48.dp)
     }
 }
 

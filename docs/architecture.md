@@ -19,7 +19,8 @@ DownloadScheduler ──► WorkManager ──► DownloadWorker (foreground, da
 
 ## App flow
 
-1. **First launch** — `WelcomeScreen`; "Get started" sets `Prefs.onboarded`, then the app asks for the
+1. **First launch** — `WelcomeScreen`; tapping "Get started" is the agreement to the terms summarised under it
+   (`TermsBody`, tappable; full text in `TERMS.md`) and sets `Prefs.onboarded`, then the app asks for the
    notification permission (API 33+) and runs a daily-throttled yt-dlp update (`Engine.updateIfStale`,
    skipped while a download is active).
 2. **Entry** — either `ShareReceiverActivity` (floating sheet over the source app, finishes as soon as the
@@ -73,7 +74,7 @@ DownloadScheduler ──► WorkManager ──► DownloadWorker (foreground, da
 
 Theme (Light default / Dark / System), Notifications (system settings), Quality (Ask · Best · 1080p · 720p ·
 480p · MP3), Save to (folder picker; "Use Movies/ClipSave" resets), Wi-Fi only, Accounts (Instagram, Facebook
-sign in/out), How it works, Report a bug / Request a feature (opens the mail app, no network code), Check for
+sign in/out), How it works, Terms (summary + links to the full terms and source code), Report a bug / Request a feature (opens the mail app, no network code), Check for
 updates (updates the embedded yt-dlp, shows the app version).
 
 ## Privacy / footprint

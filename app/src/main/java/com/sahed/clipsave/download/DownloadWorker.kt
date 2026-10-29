@@ -2,6 +2,7 @@ package com.sahed.clipsave.download
 
 import android.content.Context
 import android.content.pm.ServiceInfo
+import android.os.Build
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkInfo
@@ -76,7 +77,9 @@ class DownloadWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(c
                 }
             }
         } catch (e: CancellationException) {
-            if (stopReason == WorkInfo.STOP_REASON_CANCELLED_BY_APP) {
+            // getStopReason() needs API 31. Earlier versions can't tell, so a stop counts as the user's Cancel.
+            val cancelledByApp = if (Build.VERSION.SDK_INT >= 31) stopReason == WorkInfo.STOP_REASON_CANCELLED_BY_APP else true
+            if (cancelledByApp) {
                 // The notification's Cancel stops the whole playlist. (A pause already marked items PAUSED.)
                 ids.forEach { id -> repo.update(id) { if (it.status == DownloadStatus.QUEUED) it.copy(status = DownloadStatus.CANCELED) else it } }
             } else {

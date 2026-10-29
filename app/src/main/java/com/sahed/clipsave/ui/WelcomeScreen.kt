@@ -1,6 +1,7 @@
 package com.sahed.clipsave.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,9 +15,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +49,16 @@ import com.sahed.clipsave.ui.theme.glass
 @Composable
 fun WelcomeScreen(onStart: () -> Unit) {
     val c = LocalClipColors.current
+    var showTerms by remember { mutableStateOf(false) }
+    if (showTerms) {
+        AlertDialog(
+            onDismissRequest = { showTerms = false },
+            containerColor = c.surface,
+            title = { Text("Terms", style = ClipType.Headline, color = c.ink) },
+            text = { Column(Modifier.verticalScroll(rememberScrollState())) { TermsBody() } },
+            confirmButton = { TextButton(onClick = { showTerms = false }) { Text("Close", color = c.primary) } },
+        )
+    }
     Box(Modifier.fillMaxSize().background(c.bg)) {
         // Two soft iris orbs give the glass card something to refract.
         Box(
@@ -76,11 +99,16 @@ fun WelcomeScreen(onStart: () -> Unit) {
             Spacer(Modifier.height(40.dp))
             PrimaryButton("Get started", onStart, Modifier.fillMaxWidth())
             Spacer(Modifier.height(12.dp))
+            // Tapping Get started is the agreement, so the terms are one tap away right under the button.
             Text(
-                "Save only what you have the right to.",
+                buildAnnotatedString {
+                    append("By continuing you agree to save only what you have the right to, and to the ")
+                    withStyle(SpanStyle(color = c.primary, textDecoration = TextDecoration.Underline)) { append("Terms") }
+                    append(".")
+                },
                 style = ClipType.Caption,
                 color = c.inkMuted,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().clickable { showTerms = true },
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
         }
