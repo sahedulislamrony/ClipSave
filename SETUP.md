@@ -14,6 +14,7 @@ Everything you need to build, run, test and package ClipSave from source. For ho
 ```bash
 git clone git@github.com:sahedulislamrony/ClipSave.git
 cd ClipSave
+git switch dev                       # day-to-day work happens on dev; see CONTRIBUTING.md
 export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"   # macOS example
 ./gradlew :app:installDebug          # needs a device/emulator
 ```

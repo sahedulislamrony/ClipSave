@@ -71,7 +71,7 @@ fetch executable code outside Play (yt-dlp updates).
 |---|---|
 | [Setup and development](SETUP.md) | build from source, run, test, signed release builds, project layout |
 | [Architecture](docs/architecture.md) | app flow, download states, storage and recovery |
-| [Releasing](docs/releasing.md) | how a release is built and published |
+| [Branching and releasing](docs/releasing.md) | the dev → main flow, checks, and how a release is published |
 | [Design system](docs/design-system/README.md) | UI rules and components |
 | [Terms of Use](TERMS.md) | what you agree to by using ClipSave |
 | [Changelog](CHANGELOG.md) | what changed in each version |
@@ -85,7 +85,8 @@ fetch executable code outside Play (yt-dlp updates).
 
 ## Contributing
 
-Bug reports, ideas and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) and the
+Bug reports, ideas and pull requests are welcome. Work happens on branches named `<username>/<topic>` and goes
+into `dev` by pull request; `main` only receives tested releases. See [CONTRIBUTING.md](CONTRIBUTING.md) and the
 [Code of Conduct](CODE_OF_CONDUCT.md). Report security issues privately as described in
 [SECURITY.md](SECURITY.md); rights-holder notices are covered in [TERMS.md](TERMS.md#5-notices-from-rights-holders). Changes are tracked in [CHANGELOG.md](CHANGELOG.md).
 
