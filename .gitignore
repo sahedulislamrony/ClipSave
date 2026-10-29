@@ -5,3 +5,10 @@ local.properties
 *.iml
 .DS_Store
 target/
+
+# Release output and signing material — never commit these
+outputs/
+keystore/
+keystore.properties
+*.jks
+*.keystore

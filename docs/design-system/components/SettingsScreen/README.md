@@ -1,7 +1,10 @@
 # SettingsScreen
 
-Appearance first, then three short groups.
+Four short groups of title-only rows.
 
-- **Appearance:** Light (default) · Dark · System as mini previews; the selected one gets an iris ring.
+- **System:** Theme (opens the Light · Dark · System picker), Notifications (system settings).
+- **Downloads:** Quality (Ask · Best · 1080p · 720p · 480p · MP3), Save to (folder picker, or back to Movies/ClipSave), Wi-Fi only switch.
+- **Accounts:** Instagram and Facebook, each a glass Sign in / Sign out button.
+- **Other:** How it works, Report a bug, Request a feature, Check for updates.
 - Rows are title-only — no captions except the version.
-- **Check for updates** replaces the old yt-dlp engine updater; it updates the app and its engine together. States: Check → Checking… → Up to date / Update.
+- **Check for updates** updates the embedded downloader engine. States: Check → Checking… → Up to date / Retry; disabled while the engine is unavailable.

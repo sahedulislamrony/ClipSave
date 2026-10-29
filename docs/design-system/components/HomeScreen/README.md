@@ -1,7 +1,9 @@
 # HomeScreen
 
-Paste a link, hit Download, see recent clips.
+Paste a link, hit Download.
 
-- No helper text: the field placeholder and a glass Paste button explain themselves.
-- Recent is a 2-column grid of thumbnails with glass quality pills, so content scrolls under the floating dock.
-- The dock's round glass button is Paste-from-clipboard on Home and New download elsewhere.
+- Centered stack: ClipSave wordmark, tagline, link field, **Download**, a divider, and a glass **How it works** button.
+- No helper text: the field placeholder ("Link") and a glass Paste button (Clear once there is text) explain themselves.
+- A link copied in another app is pasted into the field once when the app comes to the front and the field is empty.
+- Download is enabled only when the field contains a link. It opens the quality sheet; after a download starts the field clears and the app switches to Downloads.
+- There is no recent-clips grid — finished downloads live in the Downloads tab.

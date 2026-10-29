@@ -1,5 +1,14 @@
 # DownloadItem
 
-Download tile: thumbnail only, with a glass play button and a glass quality pill. No title or size on the tile — long-press for details, Share, Delete.
+Download row: 96×68 thumbnail, up to two lines of title, a status line that fits the state, and one trailing control.
 
-Classes live in `components/bundle.css` and read only tokens, so Light and Dark both work unchanged.
+| State | Status line | Trailing control |
+| --- | --- | --- |
+| Downloading | progress bar, `62% · 14s · 1080p` | Pause |
+| Saving | progress bar, "Saving…" | none |
+| Queued | `#3 · 720p` | Pause |
+| Paused | grey bar, `Paused · 40% · 720p` | Resume, Delete |
+| Failed / Canceled | error (or "Canceled") in the danger colour | ⋮ menu: Retry, Delete |
+| Saved | `1080p · YouTube`, play dot on the thumbnail | ⋮ menu: Share, Delete |
+
+Tapping a saved row opens the file; tapping a paused row resumes it; tapping a failed row retries it.
