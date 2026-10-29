@@ -7,13 +7,12 @@
 
 <h1 align="center">ClipSave</h1>
 
+<!-- Badges are HTML: Markdown after a blank line would end the centered block and render left-aligned. -->
 <p align="center">
-
-[![CI](https://github.com/sahedulislamrony/ClipSave/actions/workflows/ci.yml/badge.svg)](https://github.com/sahedulislamrony/ClipSave/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/sahedulislamrony/ClipSave)](https://github.com/sahedulislamrony/ClipSave/releases/latest)
-[![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg)](LICENSE)
-![Android 10+](https://img.shields.io/badge/Android-10%2B-3DDC84)
-
+  <a href="https://github.com/sahedulislamrony/ClipSave/actions/workflows/ci.yml?query=branch%3Amain"><img src="https://github.com/sahedulislamrony/ClipSave/actions/workflows/ci.yml/badge.svg?branch=main&event=push" alt="CI"></a>
+  <a href="https://github.com/sahedulislamrony/ClipSave/releases/latest"><img src="https://img.shields.io/github/v/release/sahedulislamrony/ClipSave" alt="Release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg" alt="License: GPL v3"></a>
+  <img src="https://img.shields.io/badge/Android-10%2B-3DDC84" alt="Android 10+">
 </p>
 
 **A free, open-source video downloader for Android with a share-sheet workflow — no ads, no analytics, no
