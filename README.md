@@ -58,7 +58,7 @@ fetch executable code outside Play (yt-dlp updates).
 
 | | |
 |---|---|
-| [Setup and development](docs/setup.md) | build from source, run, test, signed release builds, project layout |
+| [Setup and development](SETUP.md) | build from source, run, test, signed release builds, project layout |
 | [Architecture](docs/architecture.md) | app flow, download states, storage and recovery |
 | [Releasing](docs/releasing.md) | how a release is built and published |
 | [Design system](docs/design-system/README.md) | UI rules and components |

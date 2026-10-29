@@ -1,7 +1,7 @@
 # Setup and development
 
 Everything you need to build, run, test and package ClipSave from source. For how the app works inside, see
-[architecture.md](architecture.md); for publishing a release, see [releasing.md](releasing.md).
+[docs/architecture.md](docs/architecture.md); for publishing a release, see [docs/releasing.md](docs/releasing.md).
 
 ## Requirements
 
@@ -77,7 +77,7 @@ Writes signed, verified APKs to `outputs/` (gitignored), plus `SHA256SUMS.txt` a
 | `download/DownloadRepository` | JSON-backed history (`files/downloads.json`) |
 | `download/MediaStoreSaver`, `Notifications` | scoped-storage save and progress/finished notifications |
 
-UI rules and tokens are in the [design system](design-system/README.md).
+UI rules and tokens are in the [design system](docs/design-system/README.md).
 
 ## Behaviour worth knowing
 

@@ -18,7 +18,7 @@ first. Security problems go through [SECURITY.md](SECURITY.md), not public issue
 
 ## Development setup
 
-Build, run and test instructions are in [docs/setup.md](docs/setup.md); read
+Build, run and test instructions are in [SETUP.md](SETUP.md); read
 [docs/architecture.md](docs/architecture.md) for how the pieces fit together. Quick start:
 
 ```bash
