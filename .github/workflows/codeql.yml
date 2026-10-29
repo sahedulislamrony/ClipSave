@@ -46,7 +46,7 @@ jobs:
           java-version: 17
 
       - if: matrix.build-mode == 'manual'
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - uses: github/codeql-action/init@v3
         with:
