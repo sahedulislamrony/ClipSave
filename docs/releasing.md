@@ -19,7 +19,7 @@ The rules are enforced by two GitHub rulesets ([`.github/rulesets`](../.github/r
 
 | Workflow | When | Check name(s) |
 |---|---|---|
-| `ci.yml` | pull requests into `dev`/`main` | **Build and lint**, **Unit tests** |
+| `ci.yml` | pull requests into `dev`/`main`, pushes to `main` (feeds the README badge) | **Build and lint**, **Unit tests** |
 | `codeql.yml` | pull requests into `dev`/`main`, pushes to `main`, and weekly | **Analyze (java-kotlin)**, **Analyze (actions)** (code scanning) |
 | `branch-rules.yml` | pull requests into `dev`/`main` | **Branch rules**: `<username>/<topic>` → `dev`, only `dev` → `main` |
 | `release-check.yml` | pull requests into `main` | **Release readiness**: new version, higher `versionCode`, changelog entry, release (R8) build |
@@ -79,7 +79,7 @@ If the Release run fails after the merge, fix the cause and re-run it from **Act
 5. **Code scanning:** CodeQL results appear after the first run of `codeql.yml`; the rulesets wait for them.
    If CodeQL cannot analyse the Kotlin sources, check the **Analyze (java-kotlin)** log; the matrix in
    `codeql.yml` is where to adjust it.
-6. Dependabot opens its pull requests against `dev` (`.github/dependabot.yml`).
+6. Dependency updates are done by hand; Dependabot version updates are off (no `.github/dependabot.yml`).
 
 ## Checking a release
 

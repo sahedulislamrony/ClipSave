@@ -1,9 +1,12 @@
 name: CI
 
-# Runs on every pull request into dev or main. A direct push to dev (maintainer only) runs no checks.
+# Runs on every pull request into dev or main, and on main after a merge (that run drives the README badge,
+# so a failing pull request elsewhere doesn't turn it red). A direct push to dev (maintainer only) runs no checks.
 on:
   pull_request:
     branches: [dev, main]
+  push:
+    branches: [main]
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
