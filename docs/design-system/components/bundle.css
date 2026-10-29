@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+/* ClipSave v2 — liquid glass. Reads tokens.css custom properties only. */
+.cs, .cs * { box-sizing: border-box; margin: 0; padding: 0; }
+.cs { font-family: var(--font-sans); color: var(--ink); -webkit-font-smoothing: antialiased; font-size: 15px; line-height: 20px; letter-spacing: -0.01em; }
+.cs svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.cs svg.i.sm { width: 18px; height: 18px; } .cs svg.i.xs { width: 15px; height: 15px; }
+.cs .muted { color: var(--ink-muted); }
+.cs-stage { display: flex; justify-content: center; align-items: flex-start; padding: 24px; background: var(--surface-sunken); min-height: 100vh; }
+.cs-pad { padding: 28px; min-height: 100vh; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; background: var(--bg); position: relative; overflow: hidden; }
+
+/* phone */
+.cs-phone { position: relative; width: 390px; height: 844px; border-radius: 52px; background: var(--bg); overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow-card); display: flex; flex-direction: column; }
+.cs-status { height: 52px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 8px 32px 0 36px; font-weight: 700; font-size: 16px; position: relative; z-index: 3; }
+.cs-status .sig { display: flex; gap: 6px; align-items: center; } .cs-status .sig svg { height: 12px; fill: currentColor; }
+.cs-scroll { flex: 1; padding: 0 20px 120px; display: flex; flex-direction: column; gap: 22px; }
+
+/* type */
+.cs-display { font-size: 40px; line-height: 42px; font-weight: 800; letter-spacing: -0.035em; }
+.cs-title { font-size: 30px; line-height: 36px; font-weight: 800; letter-spacing: -0.03em; }
+.cs-headline { font-size: 17px; line-height: 22px; font-weight: 700; letter-spacing: -0.015em; }
+.cs-strong { font-size: 15px; line-height: 20px; font-weight: 600; }
+.cs-label { font-size: 13px; line-height: 16px; font-weight: 600; }
+.cs-caption { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ink-muted); }
+
+/* LIQUID GLASS — the one material */
+.glass { position: relative; background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 -1px 1px rgba(255,255,255,0.06), var(--shadow-glass); }
+.glass::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(160deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 38%, rgba(255,255,255,0) 70%, rgba(255,255,255,0.18) 100%); mix-blend-mode: soft-light; }
+
+/* mark */
+.cs-mark { width: 38px; height: 38px; border-radius: 12px; background: var(--primary); color: var(--on-primary); display: grid; place-items: center; flex: none; box-shadow: inset 0 1px 0 rgba(255,255,255,0.35); }
+.cs-mark svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* buttons */
+.cs-btn { appearance: none; border: 0; font: inherit; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 22px; border-radius: var(--radius-pill); font-size: 15px; font-weight: 700; white-space: nowrap; color: var(--ink); }
+.cs-btn.block { width: 100%; height: 58px; font-size: 16px; }
+.cs-btn.primary { background: var(--primary); color: var(--on-primary); box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -2px 6px rgba(0,0,0,0.12), var(--shadow-primary); }
+.cs-btn.primary.pressed { background: var(--primary-strong); }
+.cs-btn.glass { color: var(--ink); }
+.cs-btn.sm { height: 36px; padding: 0 16px; font-size: 13px; }
+.cs-btn:disabled { background: var(--surface-sunken); color: var(--ink-faint); box-shadow: none; }
+.cs-ibtn { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: var(--ink); flex: none; }
+.cs-ibtn.sm { width: 36px; height: 36px; }
+
+/* field */
+.cs-field { display: flex; align-items: center; gap: 10px; height: 60px; padding: 0 8px 0 18px; border-radius: var(--radius-pill); background: var(--surface-sunken); color: var(--ink-muted); }
+.cs-field .v { flex: 1; min-width: 0; color: var(--ink); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-field .v.ph { color: var(--ink-faint); }
+.cs-field.focus { box-shadow: 0 0 0 2px var(--primary); background: var(--bg); }
+
+/* segmented / chips — glass */
+.cs-seg { display: flex; padding: 4px; border-radius: var(--radius-pill); gap: 2px; }
+.cs-seg > div { position: relative; flex: 1; height: 36px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--ink-muted); padding: 0 14px; z-index: 1; }
+.cs-seg > div.on { color: var(--ink); background: var(--glass-lens); }
+.cs-seg.solid { background: var(--surface-sunken); }
+.cs-seg.solid > div.on { background: var(--bg); box-shadow: var(--shadow-card); }
+
+/* art thumbnails (abstract; real ones come from the video) */
+.cs-art { position: relative; overflow: hidden; border-radius: var(--radius-sm); flex: none; background: var(--primary-soft); }
+.cs-art.a1 { background: radial-gradient(120% 90% at 20% 15%, var(--primary) 0%, transparent 60%), radial-gradient(100% 80% at 90% 100%, var(--primary-strong) 0%, transparent 55%), var(--primary-soft); }
+.cs-art.a2 { background: radial-gradient(90% 80% at 80% 20%, var(--primary-soft) 0%, transparent 60%), linear-gradient(200deg, var(--ink) 20%, var(--primary) 140%); }
+.cs-art.a3 { background: radial-gradient(70% 70% at 30% 70%, var(--primary) 0%, transparent 70%), linear-gradient(160deg, var(--surface-sunken), var(--primary-soft)); }
+.cs-art.a4 { background: radial-gradient(80% 90% at 85% 10%, #7c5cff 0%, transparent 60%), linear-gradient(150deg, #4a2bd0, #120a33); }
+.cs-art .play { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: #fff; }
+.cs-art .play svg { width: 12px; height: 12px; fill: currentColor; stroke: none; margin-left: 2px; }
+.cs-art .glass.play { background: rgba(10,10,15,0.28); border-color: rgba(255,255,255,0.35); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5); }
+.cs-art .meta { position: absolute; left: 8px; bottom: 8px; padding: 3px 9px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 700; color: #fff; background: rgba(10,10,15,0.32); border: 1px solid rgba(255,255,255,0.28); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+
+/* rows */
+.cs-row { display: flex; align-items: center; gap: 12px; }
+.cs-row .grow { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cs-well { width: 34px; height: 34px; border-radius: 10px; background: var(--surface-sunken); color: var(--ink); display: grid; place-items: center; flex: none; }
+.cs-well.p { background: var(--primary-soft); color: var(--on-primary-soft); }
+.cs-list { background: var(--surface-sunken); border-radius: var(--radius-lg); overflow: hidden; }
+.cs-list > .cs-row { padding: 12px 14px; min-height: 58px; }
+.cs-list > .cs-row + .cs-row { box-shadow: inset 0 1px 0 var(--line); }
+.cs-list .val { font-size: 14px; font-weight: 600; color: var(--ink-muted); display: flex; align-items: center; gap: 2px; }
+
+/* quality */
+.cs-q { display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 18px; border-radius: var(--radius-md); background: var(--surface-sunken); }
+.cs-q .res { font-size: 17px; font-weight: 700; letter-spacing: -0.015em; }
+.cs-q .tag { font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: var(--ink); color: var(--bg); }
+.cs-q .size { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--ink-muted); }
+.cs-q.on { background: var(--primary-soft); box-shadow: inset 0 0 0 2px var(--primary); }
+.cs-q.on .size { color: var(--on-primary-soft); }
+.cs-q.on .tag { background: var(--primary); color: var(--on-primary); }
+.cs-q .tick { width: 22px; height: 22px; border-radius: 50%; background: var(--primary); color: var(--on-primary); display: grid; place-items: center; }
+.cs-q .tick svg { width: 13px; height: 13px; stroke-width: 3; }
+
+/* progress, switch */
+.cs-progress { height: 6px; border-radius: var(--radius-pill); background: rgba(255,255,255,0.25); overflow: hidden; }
+.cs-progress > i { display: block; height: 100%; border-radius: inherit; background: #fff; }
+.cs-progress.on-bg { background: var(--surface-sunken); } .cs-progress.on-bg > i { background: var(--primary); }
+.cs-switch { width: 52px; height: 32px; border-radius: var(--radius-pill); background: var(--line); position: relative; flex: none; }
+.cs-switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+.cs-switch.on { background: var(--primary); } .cs-switch.on::after { left: 23px; }
+
+/* appearance picker */
+.cs-appear { display: flex; gap: 10px; }
+.cs-appear > div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--ink-muted); }
+.cs-appear .mini { width: 100%; height: 86px; border-radius: 16px; position: relative; overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); }
+.cs-appear .mini.l { background: #ffffff; } .cs-appear .mini.d { background: #0a0a0d; }
+.cs-appear .mini.s { background: linear-gradient(90deg, #ffffff 50%, #0a0a0d 50%); }
+.cs-appear .mini i { position: absolute; left: 12px; right: 12px; height: 8px; border-radius: 4px; }
+.cs-appear .mini.l i, .cs-appear .mini.s i:nth-child(odd) { background: #ececef; }
+.cs-appear .mini.d i { background: #2a2a31; }
+.cs-appear .mini.s i:nth-child(even) { background: #2a2a31; }
+.cs-appear .mini i:nth-child(1) { top: 14px; width: 40%; } .cs-appear .mini i:nth-child(2) { top: 30px; }
+.cs-appear .mini b { position: absolute; left: 12px; right: 12px; bottom: 12px; height: 18px; border-radius: 9px; background: var(--primary); }
+.cs-appear > div.on { color: var(--ink); }
+.cs-appear > div.on .mini { box-shadow: 0 0 0 2.5px var(--primary); }
+
+/* floating liquid-glass tab bar */
+.cs-dock { position: absolute; left: 16px; right: 16px; bottom: 26px; display: flex; gap: 10px; align-items: center; z-index: 5; }
+.cs-tabs { flex: 1; height: 64px; border-radius: var(--radius-pill); display: flex; align-items: center; padding: 4px; }
+.cs-tab { position: relative; z-index: 1; flex: 1; height: 56px; border-radius: var(--radius-pill); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; line-height: 12px; font-weight: 600; color: var(--ink); }
+.cs-tab.on { color: var(--primary); background: var(--glass-lens); }
+.cs-tab .dot { position: absolute; top: 8px; left: calc(50% + 8px); width: 8px; height: 8px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 2px var(--bg); }
+.cs-fab { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; color: var(--ink); flex: none; }
+
+/* sheet */
+.cs-scrim { position: absolute; inset: 0; background: var(--scrim); z-index: 4; }
+.cs-sheet { position: absolute; left: 8px; right: 8px; bottom: 8px; border-radius: 44px; padding: 10px 16px 20px; display: flex; flex-direction: column; gap: 14px; z-index: 6; }
+.cs-sheet.glass { background: var(--glass); }
+.cs-handle { width: 36px; height: 5px; border-radius: 3px; background: var(--ink-faint); opacity: .5; align-self: center; }

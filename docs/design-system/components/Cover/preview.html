@@ -1,0 +1,30 @@
+<!-- @dsCard height=300 -->
+<style>
+.cv{position:relative;width:960px;height:300px;background:var(--bg);overflow:hidden;font-family:var(--font-sans)}
+.cv svg{position:absolute;inset:0}
+.b-primary{fill:var(--primary)} .b-ink{fill:var(--ink)} .b-soft{fill:var(--primary-soft)} .b-strong{fill:var(--primary-strong)} .b-on{fill:var(--on-primary)} .b-bg{fill:var(--bg)} .b-sunk{fill:var(--surface-sunken)}
+.r-lg{rx:var(--radius-lg)} .r-xl{rx:var(--radius-xl)}
+.cv .name{position:absolute;left:48px;bottom:56px;font-size:88px;line-height:.92;font-weight:800;letter-spacing:-0.04em;color:var(--ink)}
+.cv .tag{position:absolute;left:52px;bottom:30px;font-size:14px;color:var(--ink-muted);font-weight:500}
+</style>
+<div class="cv">
+<svg viewBox="0 0 960 300" width="960" height="300">
+<!-- blocks: primary (iris) 220x260 slab r-xl, primary-strong 160x120, ink 200x112, primary-soft 160x112 — iris leads, ink anchors.
+     arrangement: tall iris slab with a staggered stack to its right, slab bleeding off the top, stack bleeding off the right edge.
+     pattern: pills (radius-pill) — the floating glass dock and pill buttons are the system's signature shape; three dock-like capsules ride the blocks.
+     scales: gaps space-3, pill height 56 (dock) and 16, corners radius-xl / radius-lg / radius-pill. -->
+<rect class="b-primary r-xl" x="500" y="-34" width="220" height="262"/>
+<rect class="b-strong r-lg" x="732" y="-24" width="160" height="120"/>
+<rect class="b-soft r-lg" x="904" y="-24" width="160" height="120"/>
+<rect class="b-ink r-lg" x="732" y="108" width="200" height="112"/>
+<rect class="b-soft r-lg" x="944" y="108" width="160" height="112"/>
+<rect class="b-sunk" x="560" y="240" width="372" height="56" rx="28"/>
+<rect class="b-primary" x="568" y="248" width="116" height="40" rx="20"/>
+<rect class="b-on" x="524" y="24" width="96" height="16" rx="8"/>
+<rect class="b-on" x="524" y="52" width="60" height="16" rx="8"/>
+<rect class="b-bg" x="756" y="144" width="120" height="40" rx="20"/>
+<rect class="b-sunk" x="944" y="240" width="56" height="56" rx="28"/>
+</svg>
+<div class="name">ClipSave</div>
+<div class="tag">One tap. One colour. Liquid glass.</div>
+</div>
