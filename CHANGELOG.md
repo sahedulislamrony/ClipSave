@@ -6,6 +6,10 @@ All notable changes to ClipSave are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- Automated unit tests (`./test.sh`) for link parsing, quality selection, playlist numbering, file names and
+  download history; they run on every pull request.
+
 ## [1.0.0] - 2026-10-29
 
 First public release.

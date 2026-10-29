@@ -27,7 +27,26 @@ APK ~200 MB; each per-ABI APK is roughly a third of that).
 | `./gradlew :app:installDebug` | Build and install the debug app |
 | `./gradlew :app:assembleDebug` | Debug APKs (one per ABI plus universal) |
 | `./gradlew :app:lintDebug` | Android lint (also run by CI) |
+| `./test.sh` | Unit tests (also run by CI); `--ci` runs build + lint + tests like CI |
 | `./build.sh` | Signed release APKs into `outputs/` |
+
+## Tests
+
+```bash
+./test.sh                       # unit tests, no device needed (~20 s)
+./test.sh --ci                  # everything pull requests run: debug build + lint + unit tests
+./test.sh --filter UrlParser    # only tests whose class or name contains the text
+./gradlew :app:testDebugUnitTest   # the plain Gradle equivalent
+```
+
+* The script prints a pass/fail summary and exits non-zero on failure, so it works in hooks and scripts. The HTML
+  report is at `app/build/reports/tests/testDebugUnitTest/index.html`.
+* Unit tests live in `app/src/test/java/com/sahed/clipsave/` (JUnit 4) and cover the logic that doesn't need
+  Android: link parsing, platform detection, quality selection, playlist numbering, file-name safety and the
+  download-history format. UI, WorkManager and yt-dlp are tested by running the app (see below).
+* Pull requests into `dev` and `main` run these same tests (**Unit tests** check). A fix should come with a test
+  that fails without it.
+* Keep new logic in plain Kotlin where possible (no `Context`), so it can be tested like this.
 
 ## Test the share flow without another app
 

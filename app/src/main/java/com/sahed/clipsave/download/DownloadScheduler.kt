@@ -168,9 +168,9 @@ class DownloadScheduler(
         WorkManager.getInstance(context).enqueueUniqueWork(name, policy, request)
     }
 
-    /** Strips characters Android/FAT filesystems reject and caps the length. */
-    private fun sanitizeFileName(raw: String): String =
-        raw.replace(Regex("[\\\\/:*?\"<>|\\p{Cntrl}]"), "").trim().trim('.').take(100).trim()
-
     private fun workName(id: String) = "download-$id"
 }
+
+/** Strips characters Android/FAT filesystems reject and caps the length. */
+internal fun sanitizeFileName(raw: String): String =
+    raw.replace(Regex("[\\\\/:*?\"<>|\\p{Cntrl}]"), "").trim().trim('.').take(100).trim()

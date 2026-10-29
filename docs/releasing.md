@@ -19,7 +19,7 @@ The rules are enforced by two GitHub rulesets ([`.github/rulesets`](../.github/r
 
 | Workflow | When | Check name(s) |
 |---|---|---|
-| `ci.yml` | pull requests into `dev`/`main` | **Build and lint** |
+| `ci.yml` | pull requests into `dev`/`main` | **Build and lint**, **Unit tests** |
 | `codeql.yml` | pull requests into `dev`/`main`, pushes to `main`, and weekly | **Analyze (java-kotlin)**, **Analyze (actions)** (code scanning) |
 | `branch-rules.yml` | pull requests into `dev`/`main` | **Branch rules**: `<username>/<topic>` → `dev`, only `dev` → `main` |
 | `release-check.yml` | pull requests into `main` | **Release readiness**: new version, higher `versionCode`, changelog entry, release (R8) build |
@@ -37,7 +37,7 @@ The rules are enforced by two GitHub rulesets ([`.github/rulesets`](../.github/r
    ```bash
    gh pr create --base main --head dev --title "Release x.y.z" --body-file .github/PULL_REQUEST_TEMPLATE/release.md
    ```
-3. Wait for all checks: Build and lint, Branch rules, **Release readiness**, CodeQL. They run again on this
+3. Wait for all checks: Build and lint, Unit tests, Branch rules, **Release readiness**, CodeQL. They run again on this
    pull request even though they passed on `dev`.
 4. Merge with a **merge commit**.
 5. The **Release** workflow starts on `main`: it builds the signed APKs and publishes `vx.y.z` with the

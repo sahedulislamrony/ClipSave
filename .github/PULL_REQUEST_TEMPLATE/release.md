@@ -9,7 +9,7 @@ Version: **x.y.z** (versionCode **n**)
 - [ ] `dev` has been tested on a device, including a **release build** (`./build.sh`) and a real download
 - [ ] `versionName` and `versionCode` are bumped in `app/build.gradle.kts`
 - [ ] `CHANGELOG.md`: **Unreleased** moved under `## [x.y.z] - YYYY-MM-DD`
-- [ ] All checks pass: Build and lint, Branch rules, Release readiness, CodeQL
+- [ ] All checks pass: Build and lint, Unit tests, Branch rules, Release readiness, CodeQL
 
 ## After merging
 

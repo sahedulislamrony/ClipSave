@@ -60,13 +60,16 @@ Releases (version bump, changelog, the `dev` → `main` pull request) are descri
    [architecture](docs/architecture.md), design-system READMEs) in the same pull request, and add a line under
    **Unreleased** in [CHANGELOG.md](CHANGELOG.md). Don't change `versionName`/`versionCode`; the maintainer does
    that when releasing.
-5. Test on a device or emulator, including a **release build** (`./build.sh`) for anything touching downloads,
+5. Add or update **unit tests** for logic you change, and run them with `./test.sh` before pushing (see
+   [SETUP.md](SETUP.md#tests)).
+6. Test on a device or emulator, including a **release build** (`./build.sh`) for anything touching downloads,
    storage or dependencies — R8 can break code that works in debug.
-6. Open a pull request **into `dev`** using the template. These checks must pass before it can be merged:
+7. Open a pull request **into `dev`** using the template. These checks must pass before it can be merged:
 
    | Check | What it verifies |
    |---|---|
    | **Build and lint** | debug build and Android lint |
+   | **Unit tests** | the automated tests in `app/src/test` |
    | **CodeQL** | code scanning for the app and the workflow files |
    | **Branch rules** | your branch is `<username>/<topic>` and targets `dev` |
 
