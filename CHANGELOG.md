@@ -6,6 +6,12 @@ All notable changes to ClipSave are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-29
+
+### Changed
+- Project housekeeping: centered README badges, the CI badge now tracks `main`, and Dependabot is turned off.
+  No change to the app itself.
+
 ## [1.1.0] - 2026-10-29
 
 ### Added
@@ -57,6 +63,7 @@ First public release.
 - Terms of Use and disclaimer (`TERMS.md`), agreed on first launch and readable under Settings → Other → Terms.
 - Signed per-ABI release APKs, `build.sh`, and a GitHub Actions release workflow.
 
-[Unreleased]: https://github.com/sahedulislamrony/ClipSave/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/sahedulislamrony/ClipSave/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.2.0
 [1.1.0]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.1.0
 [1.0.0]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.0.0
