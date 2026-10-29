@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- In-app updates from GitHub Releases. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
         android:name=".ClipSaveApp"
@@ -53,6 +55,10 @@
             android:name=".ui.LoginActivity"
             android:exported="false"
             android:theme="@style/Theme.ClipSave" />
+
+        <receiver
+            android:name=".core.InstallResultReceiver"
+            android:exported="false" />
 
         <!-- WorkManager's foreground service must declare a type on Android 14+. -->
         <service

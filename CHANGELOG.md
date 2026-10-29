@@ -6,9 +6,36 @@ All notable changes to ClipSave are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-29
+
 ### Added
 - Automated unit tests (`./test.sh`) for link parsing, quality selection, playlist numbering, file names and
   download history; they run on every pull request.
+- In-app updates: ClipSave checks GitHub Releases each time it opens (and from **Settings → Check for
+  updates**), downloads the same APK variant that's installed (arm64-v8a, armeabi-v7a, x86_64 or universal) and
+  hands it to the system installer. A newer release must be installed before the app can be used.
+- Playlists are read 100 videos at a time (**Load next 100** / **Load remaining N**), and you tick which videos
+  to download, up to 100 per download across pages. Qualities and the Download button show an estimated total
+  size for the ticked videos.
+- Screenshots in `docs/screens`, shown in the README.
+- **Settings → Other → Developer**: who makes ClipSave, with GitHub, LinkedIn and email links.
+
+### Changed
+- The app ID and code package are now `com.sahedul.clipsave` (was `com.sahed.clipsave`). Android sees this as a
+  new app, so uninstall 1.0.0 before installing 1.1.0.
+- Fetching a YouTube video's qualities is about 4× faster (≈25 s → 5–7 s on a phone): the picker no longer
+  solves YouTube's player challenge, which only the download needs. yt-dlp also keeps a cache between runs.
+- Playlist files are numbered by their place in the whole playlist, padded to its full length.
+- Download notifications show in the normal notification list and status bar instead of under "Silent", carry
+  the white ClipSave mark on the brand colour, drop the Cancel button, and open Downloads when tapped.
+- A download shows "Preparing…" with a moving bar until data starts arriving, instead of a frozen 0%.
+
+### Fixed
+- Instagram and Facebook sign-in showed a blank white screen.
+- Long playlists (and endless YouTube Mixes) took minutes to open, or never did, because every video was
+  listed before the sheet appeared.
+- Sharing a link without ever opening ClipSave never asked for notification permission, so on Android 13+ no
+  download notifications appeared.
 
 ## [1.0.0] - 2026-10-29
 
@@ -30,5 +57,6 @@ First public release.
 - Terms of Use and disclaimer (`TERMS.md`), agreed on first launch and readable under Settings → Other → Terms.
 - Signed per-ABI release APKs, `build.sh`, and a GitHub Actions release workflow.
 
-[Unreleased]: https://github.com/sahedulislamrony/ClipSave/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/sahedulislamrony/ClipSave/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.1.0
 [1.0.0]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.0.0

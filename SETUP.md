@@ -41,7 +41,7 @@ APK ~200 MB; each per-ABI APK is roughly a third of that).
 
 * The script prints a pass/fail summary and exits non-zero on failure, so it works in hooks and scripts. The HTML
   report is at `app/build/reports/tests/testDebugUnitTest/index.html`.
-* Unit tests live in `app/src/test/java/com/sahed/clipsave/` (JUnit 4) and cover the logic that doesn't need
+* Unit tests live in `app/src/test/java/com/sahedul/clipsave/` (JUnit 4) and cover the logic that doesn't need
   Android: link parsing, platform detection, quality selection, playlist numbering, file-name safety and the
   download-history format. UI, WorkManager and yt-dlp are tested by running the app (see below).
 * Pull requests into `dev` and `main` run these same tests (**Unit tests** check). A fix should come with a test
@@ -51,7 +51,7 @@ APK ~200 MB; each per-ABI APK is roughly a third of that).
 ## Test the share flow without another app
 
 ```bash
-adb shell am start -n com.sahed.clipsave/.ui.ShareReceiverActivity \
+adb shell am start -n com.sahedul.clipsave/.ui.ShareReceiverActivity \
   -a android.intent.action.SEND -t text/plain \
   --es android.intent.extra.TEXT "'https://www.instagram.com/reel/XXXX/'"
 ```
