@@ -10,12 +10,17 @@
 | `dev` | maintainer directly; everyone else by pull request | contributors' pull requests from `<username>/<topic>`, squash-merged |
 | `<username>/<topic>` | its author | day-to-day work |
 
+**Checks run on pull requests, not on the maintainer's direct pushes to `dev`:** a push you make straight to
+`dev` skips every check (and the ruleset lets repository admins push there), which keeps day-to-day work fast.
+Everyone else goes through a pull request, where the checks are required, and the release pull request into
+`main` runs them all again.
+
 The rules are enforced by two GitHub rulesets ([`.github/rulesets`](../.github/rulesets)) and these workflows:
 
 | Workflow | When | Check name(s) |
 |---|---|---|
-| `ci.yml` | pull requests into `dev`/`main`; pushes to `dev` | **Build and lint** |
-| `codeql.yml` | same, plus weekly | **Analyze (java-kotlin)**, **Analyze (actions)** (code scanning) |
+| `ci.yml` | pull requests into `dev`/`main` | **Build and lint** |
+| `codeql.yml` | pull requests into `dev`/`main`, pushes to `main`, and weekly | **Analyze (java-kotlin)**, **Analyze (actions)** (code scanning) |
 | `branch-rules.yml` | pull requests into `dev`/`main` | **Branch rules**: `<username>/<topic>` → `dev`, only `dev` → `main` |
 | `release-check.yml` | pull requests into `main` | **Release readiness**: new version, higher `versionCode`, changelog entry, release (R8) build |
 | `release.yml` | push to `main` | builds signed APKs and publishes the GitHub Release |
