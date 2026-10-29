@@ -19,7 +19,8 @@ DownloadScheduler ──► WorkManager ──► DownloadWorker (foreground, da
 
 ## App flow
 
-1. **First launch** — `WelcomeScreen`; "Get started" sets `Prefs.onboarded`, then the app asks for the
+1. **First launch** — `WelcomeScreen`; tapping "Get started" is the agreement to the terms summarised under it
+   (`TermsBody`, tappable; full text in `TERMS.md`) and sets `Prefs.onboarded`, then the app asks for the
    notification permission (API 33+) and runs a daily-throttled yt-dlp update (`Engine.updateIfStale`,
    skipped while a download is active).
 2. **Entry** — either `ShareReceiverActivity` (floating sheet over the source app, finishes as soon as the
@@ -46,7 +47,7 @@ DownloadScheduler ──► WorkManager ──► DownloadWorker (foreground, da
 | `ShareReceiverActivity` | `ACTION_SEND text/plain`; separate task (`.ShareSheet`) so the quality sheet floats over the source app; toasts and closes if no link is found |
 | `MainActivity` | `singleTask`; hosts Welcome, the three tabs, and pushed pages (How it works, Theme). Accepts an `EXTRA_TAB` to open on a given tab (used for "Sign in" from the share sheet) |
 | `FormatSheet` / `ExtractViewModel` | shared by the share flow and the Home screen; editable file name, Video/Audio switch, at most four options per type |
-| `Engine` | initialises yt-dlp + ffmpeg (`Starting → Ready | Failed`); `update()` pulls the newest yt-dlp (Settings → Check for updates, and daily) |
+| `Engine` | initialises yt-dlp + ffmpeg (`Starting → Ready | Failed`); `update()` pulls the newest yt-dlp (Settings → Other → Check for updates, and daily) |
 | `Extractor` | builds the yt-dlp request (`--no-playlist` for single videos, session cookies if signed in), maps failures to user-readable messages |
 | `CookieStore` / `LoginActivity` | optional Instagram/Facebook sign-in; WebView cookies are copied to Netscape cookie files in private app storage, merged for `--cookies`; password never stored |
 | `DownloadWorker` | one yt-dlp process per download; cancelling the work kills the process. A playlist is one work request (`KEY_BATCH`) that downloads its videos one after another |
@@ -73,8 +74,9 @@ DownloadScheduler ──► WorkManager ──► DownloadWorker (foreground, da
 
 Theme (Light default / Dark / System), Notifications (system settings), Quality (Ask · Best · 1080p · 720p ·
 480p · MP3), Save to (folder picker; "Use Movies/ClipSave" resets), Wi-Fi only, Accounts (Instagram, Facebook
-sign in/out), How it works, Report a bug / Request a feature (opens the mail app, no network code), Check for
-updates (updates the embedded yt-dlp, shows the app version).
+sign in/out), and an **Other** group that starts with Check for updates (updates the embedded yt-dlp, shows the
+app version), then How it works, Terms (summary + links to the full terms and source code), and Report a bug /
+Request a feature (opens the mail app, no network code).
 
 ## Privacy / footprint
 

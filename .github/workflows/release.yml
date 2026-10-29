@@ -1,38 +1,65 @@
 name: Release
 
-# Push a tag like v1.0.0 to build signed APKs and publish them as a GitHub Release.
+# Runs when the release pull request (dev → main) is merged. Builds the signed APKs and publishes a GitHub
+# Release for the version in app/build.gradle.kts. If that version is already released the run does nothing,
+# so a docs-only merge to main is harmless.
+#
 # Required repository secrets (Settings → Secrets and variables → Actions):
-#   KEYSTORE_BASE64    base64 -i keystore/clipsave-release.jks | pbcopy
+#   KEYSTORE_BASE64    base64 -i keystore/clipsave-release.jks
 #   KEYSTORE_PASSWORD  storePassword (= keyPassword) from keystore.properties
-#   KEY_ALIAS          keyAlias from keystore.properties (clipsave)
+#   KEY_ALIAS          keyAlias from keystore.properties
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
   workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 permissions:
   contents: write
 
 jobs:
   release:
+    name: Release
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version
+        id: version
+        run: |
+          VERSION=$(sed -n 's/.*versionName = "\(.*\)".*/\1/p' app/build.gradle.kts | head -1)
+          test -n "$VERSION" || { echo "::error::Could not read versionName"; exit 1; }
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+            echo "v$VERSION is already released, so nothing was published. Bump versionName and versionCode to release a new version." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "released=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: actions/setup-java@v4
+        if: steps.version.outputs.released == 'false'
         with:
           distribution: temurin
           java-version: 17
 
       - uses: gradle/actions/setup-gradle@v4
+        if: steps.version.outputs.released == 'false'
 
       - name: Restore signing key
+        if: steps.version.outputs.released == 'false'
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          test -n "$KEYSTORE_BASE64" || { echo "KEYSTORE_BASE64 secret is not set"; exit 1; }
+          test -n "$KEYSTORE_BASE64" || { echo "::error::KEYSTORE_BASE64 secret is not set"; exit 1; }
           mkdir -p keystore
           echo "$KEYSTORE_BASE64" | base64 --decode > keystore/clipsave-release.jks
           {
@@ -43,19 +70,33 @@ jobs:
           } > keystore.properties
 
       - name: Build signed APKs
+        if: steps.version.outputs.released == 'false'
         run: ./build.sh
 
+      - name: Write release notes
+        if: steps.version.outputs.released == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          awk -v v="$VERSION" '
+            index($0, "## [" v "]") == 1 { on = 1; next }
+            /^## \[/ { on = 0 }
+            on { print }
+          ' CHANGELOG.md > RELEASE_NOTES.md
+          [ -s RELEASE_NOTES.md ] || echo "See CHANGELOG.md for what changed." > RELEASE_NOTES.md
+          {
+            echo
+            echo "---"
+            echo "Pick the APK for your phone (most phones: \`arm64-v8a\`). Verify downloads with \`SHA256SUMS.txt\`; the signing certificate is listed in SECURITY.md."
+          } >> RELEASE_NOTES.md
+
       - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: steps.version.outputs.released == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          gh release create "$GITHUB_REF_NAME" outputs/ClipSave-*.apk outputs/SHA256SUMS.txt \
-            --title "ClipSave ${GITHUB_REF_NAME#v}" --generate-notes
-
-      - name: Keep APKs from manual runs
-        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: clipsave-apks
-          path: outputs/
+          PRERELEASE=""
+          case "$VERSION" in *-*) PRERELEASE="--prerelease" ;; esac
+          gh release create "v$VERSION" outputs/ClipSave-*.apk outputs/SHA256SUMS.txt \
+            --target "$GITHUB_SHA" --title "ClipSave $VERSION" --notes-file RELEASE_NOTES.md $PRERELEASE

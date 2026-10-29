@@ -1,99 +1,105 @@
-# ClipSave
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.png">
+    <img src="docs/assets/logo-light.png" width="128" alt="ClipSave logo">
+  </picture>
+</p>
 
-Android video downloader with a share-sheet workflow — **no ads, no analytics,
-no self-updater**. Share a link from Instagram, Facebook, YouTube, TikTok, X, Vimeo, Reddit… to
-ClipSave (or paste it on the Home screen), pick a quality, and it downloads in the background to
-`Movies/ClipSave` (`Music/ClipSave` for audio, `Pictures/ClipSave` for images), or to a folder you
-choose under **Settings → Save to**.
+<h1 align="center">ClipSave</h1>
 
-Design overview: [docs/architecture.md](docs/architecture.md) · UI spec: [docs/design-system](docs/design-system/README.md).
+<p align="center">
+
+[![CI](https://github.com/sahedulislamrony/ClipSave/actions/workflows/ci.yml/badge.svg)](https://github.com/sahedulislamrony/ClipSave/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/sahedulislamrony/ClipSave)](https://github.com/sahedulislamrony/ClipSave/releases/latest)
+[![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg)](LICENSE)
+![Android 10+](https://img.shields.io/badge/Android-10%2B-3DDC84)
+
+</p>
+
+**A free, open-source video downloader for Android with a share-sheet workflow — no ads, no analytics, no
+trackers.** Share a link from Instagram, Facebook, YouTube, TikTok, X, Vimeo, Reddit… to ClipSave (or paste it
+on the Home screen), pick a quality, and it downloads in the background to `Movies/ClipSave` (`Music/ClipSave`
+for audio), or to a folder you choose. Powered by [yt-dlp](https://github.com/yt-dlp/yt-dlp), so it supports
+1000+ sites.
+
+> **Legal:** only download content you own or have permission to save. Copyright law and platform terms of
+> service may restrict downloading, and you alone are responsible for what you save and how you use ClipSave.
+> It is provided without warranty and is not affiliated with any service it can download from. Read the
+> [Terms of Use and Disclaimer](TERMS.md); you agree to them on first launch (also in Settings → Other → Terms).
 
 ## Features
 
-* **Share or paste** — `Share → ClipSave` from any app, or paste a link on Home (a link copied
-  elsewhere is picked up automatically when the app opens).
-* **Quality sheet** — Video/Audio switch, up to four qualities with sizes, editable file name.
-  Set **Settings → Quality** to a fixed default (Best, 1080p, 720p, 480p, MP3) for one-tap
-  downloads that skip the sheet; **Ask** (default) always shows it.
-* **YouTube playlists** — a link with `list=` opens a playlist sheet: folder name, numbering
-  (1→N, N→1, none) and one quality cap. Videos download one after another into
-  `<download folder>/<playlist name>/`; **Downloads → Playlists** groups them per playlist.
-* **Background downloads** — foreground service with a progress notification (Cancel action);
-  survives leaving the app.
-* **Pause / resume** — per download, per playlist, or **Pause all / Resume all**; partial files are
-  kept, so resuming continues where it stopped. Failed or canceled items can be retried.
-* **Wi-Fi only** switch, light/dark/system theme, optional Instagram/Facebook sign-in.
+* **Share or paste** — `Share → ClipSave` from any app, or paste a link on Home (a link copied elsewhere is
+  picked up automatically when the app opens).
+* **Quality sheet** — Video/Audio switch, up to four qualities with sizes, editable file name. Set
+  **Settings → Quality** to a fixed default (Best, 1080p, 720p, 480p, MP3) for one-tap downloads that skip the
+  sheet; **Ask** (default) always shows it.
+* **YouTube playlists** — a link with `list=` opens a playlist sheet: folder name, numbering (1→N, N→1, none)
+  and one quality cap. Videos download one after another into `<download folder>/<playlist name>/`;
+  **Downloads → Playlists** groups them per playlist.
+* **Background downloads** — foreground service with a progress notification (Cancel action); survives leaving
+  the app.
+* **Pause / resume** — per download, per playlist, or **Pause all / Resume all**; partial files are kept, so
+  resuming continues where it stopped. Failed or canceled items can be retried.
+* **Your folder** — save to the default folder or pick any folder with the system picker; no storage permission.
+* **Private by design** — Wi-Fi only switch, light/dark/system theme, optional Instagram/Facebook sign-in that
+  stores session cookies only, never your password.
 
-## Build & run
+## Install
 
-```bash
-export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
-./gradlew :app:installDebug          # needs a device/emulator, minSdk 29
-```
+Download the latest APK from [**Releases**](https://github.com/sahedulislamrony/ClipSave/releases/latest):
 
-Debug APKs are written per ABI to `app/build/outputs/apk/debug/` (yt-dlp's Python + ffmpeg make the
-universal APK ~218 MB; each per-ABI APK is roughly a third of that).
-
-## Release build (signed APKs)
-
-```bash
-./build.sh            # or ./build.sh --clean
-```
-
-Writes signed, verified APKs to `outputs/` (gitignored): `ClipSave-<version>-arm64-v8a.apk` (most phones),
-`-armeabi-v7a`, `-x86_64`, `-universal`, plus `SHA256SUMS.txt` and the R8 `mapping-<version>.txt`.
-Bump `versionCode`/`versionName` in `app/build.gradle.kts` before each release.
-
-* **First run** generates a signing key in `keystore/` and `keystore.properties` (both gitignored,
-  random password). **Back them up** — every update must be signed with the same key.
-* Needs JDK 17+ and the Android SDK; the script finds Android Studio's JDK and `local.properties` itself.
-* **GitHub Releases:** `.github/workflows/release.yml` runs `build.sh` on every `v*` tag and publishes the
-  APKs. Add the secrets `KEYSTORE_BASE64` (`base64 -i keystore/clipsave-release.jks`), `KEYSTORE_PASSWORD`
-  and `KEY_ALIAS` first, then:
-
-  ```bash
-  git tag v1.0.0 && git push origin v1.0.0
-  ```
-
-Google Play won't accept this app (its policies prohibit downloaders for sites like YouTube and apps that
-fetch executable code outside Play), so distribute through GitHub Releases, [Obtainium](https://obtainium.imranr.dev/)
-(auto-updates from those releases), or [IzzyOnDroid](https://apt.izzysoft.de/fdroid/).
-
-Test the share flow without another app:
-
-```bash
-adb shell am start -n com.sahed.clipsave/.ui.ShareReceiverActivity \
-  -a android.intent.action.SEND -t text/plain \
-  --es android.intent.extra.TEXT "'https://www.instagram.com/reel/XXXX/'"
-```
-
-## Layout
-
-| Path | Role |
+| File | For |
 |---|---|
-| `ClipSaveApp`, `AppContainer` | creates notification channels; hand-rolled service locator (prefs, cookies, engine, extractor, downloads, scheduler) |
-| `ui/MainActivity` | Welcome (first launch) → Home · Downloads · Settings tabs under a floating glass `Dock`; pushed pages (`Pages.kt`: How it works, Theme) |
-| `ui/ShareReceiverActivity` | `ACTION_SEND text/plain` target; floating sheet in its own task |
-| `ui/FormatSheet`, `ExtractViewModel` | link → qualities (or playlist options) → enqueue (shared by Home and Share) |
-| `ui/DownloadsScreen`, `HomeScreen`, `SettingsScreen` | the three tabs |
-| `core/Extractor`, `Engine` | yt-dlp via [youtubedl-android](https://github.com/junkfood02/youtubedl-android); `Engine.update()` pulls the newest yt-dlp |
-| `core/UrlParser`, `Platform` | first link in shared text, YouTube playlist detection, platform labels |
-| `core/Prefs` | SharedPreferences: default quality, Wi-Fi only, theme, save folder, playlist numbering, onboarding, last update |
-| `core/CookieStore`, `ui/LoginActivity` | optional Instagram/Facebook sign-in (WebView → cookie file) for private/age-gated posts |
-| `download/DownloadWorker` | WorkManager foreground (data-sync) task: yt-dlp + ffmpeg → MediaStore/folder; playlists run as one sequential batch |
-| `download/DownloadScheduler` | enqueue single videos / playlists, cancel, retry, pause / resume (one, a playlist, or all) |
-| `download/DownloadRepository` | JSON-backed history (`files/downloads.json`) |
-| `download/MediaStoreSaver`, `Notifications` | scoped-storage save and progress/finished notifications |
+| `ClipSave-<version>-arm64-v8a.apk` | almost every phone from the last ~8 years — **start here** |
+| `ClipSave-<version>-armeabi-v7a.apk` | older 32-bit phones |
+| `ClipSave-<version>-x86_64.apk` | emulators, Chromebooks |
+| `ClipSave-<version>-universal.apk` | works everywhere, about 3× larger |
 
-## Notes
+Open the file and allow "install from this source" when Android asks. You can also add the repository URL to
+[Obtainium](https://obtainium.imranr.dev/) to get updates automatically.
 
-* Extractors live in yt-dlp, not here. When Instagram/Facebook change, use
-  **Settings → Other → Check for updates** (the app also checks once a day when opened, if nothing
-  is downloading).
-* Many Instagram/Facebook posts need a logged-in session; sign in under **Settings → Accounts**.
-  Only the session cookies are stored (private app files), never the password.
-* If the chosen save folder disappears or its permission is revoked, files fall back to
-  `Movies/ClipSave` rather than being lost.
-* Release builds are signed with your own key (see *Release build*); without `keystore.properties`, Gradle
-  produces an unsigned APK rather than falling back to the debug key.
-* Only download content you own or have permission to save; platform terms may restrict downloading.
+**Verify it** (optional): compare the file against `SHA256SUMS.txt` on the release page, and check that the
+signing certificate matches the one in [SECURITY.md](SECURITY.md#verifying-a-download).
+
+ClipSave is not on Google Play: Play's policies don't allow apps that download from sites like YouTube, or that
+fetch executable code outside Play (yt-dlp updates).
+
+## Documentation
+
+| | |
+|---|---|
+| [Setup and development](SETUP.md) | build from source, run, test, signed release builds, project layout |
+| [Architecture](docs/architecture.md) | app flow, download states, storage and recovery |
+| [Branching and releasing](docs/releasing.md) | the dev → main flow, checks, and how a release is published |
+| [Design system](docs/design-system/README.md) | UI rules and components |
+| [Terms of Use](TERMS.md) | what you agree to by using ClipSave |
+| [Changelog](CHANGELOG.md) | what changed in each version |
+
+## Good to know
+
+* If a site stops working, open **Settings → Other → Check for updates**. If it still fails, report it to
+  [yt-dlp](https://github.com/yt-dlp/yt-dlp/issues), which does the extraction.
+* Many Instagram/Facebook posts need you to be signed in (**Settings → Accounts**). Only session cookies are
+  stored on your device, never your password.
+
+## Contributing
+
+Bug reports, ideas and pull requests are welcome. Work happens on branches named `<username>/<topic>` and goes
+into `dev` by pull request; `main` only receives tested releases. See [CONTRIBUTING.md](CONTRIBUTING.md) and the
+[Code of Conduct](CODE_OF_CONDUCT.md). Report security issues privately as described in
+[SECURITY.md](SECURITY.md); rights-holder notices are covered in [TERMS.md](TERMS.md#5-notices-from-rights-holders). Changes are tracked in [CHANGELOG.md](CHANGELOG.md).
+
+## License
+
+ClipSave is free software, licensed under the [GNU General Public License v3.0 or later](LICENSE) — the same
+license as [youtubedl-android](https://github.com/junkfood02/youtubedl-android), which it is built on.
+You may use, study, share and modify it under those terms, and use is subject to the [Terms of Use](TERMS.md). See
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for bundled software and their licenses.
+
+## Acknowledgements
+
+[yt-dlp](https://github.com/yt-dlp/yt-dlp) and its contributors do the heavy lifting;
+[youtubedl-android](https://github.com/junkfood02/youtubedl-android) makes it run on Android;
+[FFmpeg](https://ffmpeg.org/), [Jetpack Compose](https://developer.android.com/jetpack/compose),
+[Coil](https://github.com/coil-kt/coil) and [Haze](https://github.com/chrisbanes/haze) complete the stack.

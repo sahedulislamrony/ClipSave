@@ -1,0 +1,59 @@
+name: Bug report
+description: Something in ClipSave doesn't work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! If a *site* stopped working, tap **Settings → Other → Check for updates** first.
+        Don't paste private links or account details.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what you saw. Screenshots help.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Share a YouTube link to ClipSave
+        2. Pick 1080p
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: source
+    attributes:
+      label: Link type
+      options: [YouTube, YouTube playlist, Instagram, Facebook, TikTok, X / Twitter, Vimeo, Reddit, Other, Not link-related]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: ClipSave version
+      description: Settings → Other → Check for updates shows it.
+      placeholder: v1.0.0
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: Pixel 8, Android 15
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install it?
+      options: [GitHub Release APK, Obtainium, Built from source, Other]
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or error message
+      description: The text shown by the app, or `adb logcat` output (tags `Extractor`, `Engine`) if you have it.
+      render: text

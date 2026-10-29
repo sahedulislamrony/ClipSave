@@ -1,0 +1,65 @@
+name: Release readiness
+
+# Extra checks on the pull request that releases dev to main. All other checks (CI, CodeQL, branch rules)
+# run on it as well.
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: release-check-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Release readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check version and changelog
+        run: |
+          VERSION=$(sed -n 's/.*versionName = "\(.*\)".*/\1/p' app/build.gradle.kts | head -1)
+          CODE=$(sed -n 's/.*versionCode = \([0-9]*\).*/\1/p' app/build.gradle.kts | head -1)
+          if [ -z "$VERSION" ] || [ -z "$CODE" ]; then
+            echo "::error::Could not read versionName/versionCode from app/build.gradle.kts"
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "::error::v$VERSION is already released. Bump versionName and versionCode in app/build.gradle.kts."
+            exit 1
+          fi
+          PREV=$(git tag --list 'v*' --sort=-v:refname | head -1)
+          if [ -n "$PREV" ]; then
+            PREV_CODE=$(git show "$PREV:app/build.gradle.kts" | sed -n 's/.*versionCode = \([0-9]*\).*/\1/p' | head -1)
+            if [ "$CODE" -le "${PREV_CODE:-0}" ]; then
+              echo "::error::versionCode $CODE must be greater than $PREV's ($PREV_CODE), or Android won't install it as an update."
+              exit 1
+            fi
+          fi
+          if ! grep -qF "## [$VERSION]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no '## [$VERSION]' section. Move the Unreleased notes under it."
+            exit 1
+          fi
+          {
+            echo "### Release readiness"
+            echo "- Version **$VERSION** (code $CODE), previous release: ${PREV:-none}"
+            echo "- Changelog entry found"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Same R8 shrinking as the real release; catches code that only breaks when minified.
+      - name: Release build (R8)
+        run: ./gradlew :app:assembleRelease --console=plain
