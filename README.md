@@ -1,9 +1,20 @@
-# ClipSave
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.png">
+    <img src="docs/assets/logo-light.png" width="128" alt="ClipSave logo">
+  </picture>
+</p>
+
+<h1 align="center">ClipSave</h1>
+
+<p align="center">
 
 [![CI](https://github.com/sahedulislamrony/ClipSave/actions/workflows/ci.yml/badge.svg)](https://github.com/sahedulislamrony/ClipSave/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/sahedulislamrony/ClipSave)](https://github.com/sahedulislamrony/ClipSave/releases/latest)
 [![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg)](LICENSE)
 ![Android 10+](https://img.shields.io/badge/Android-10%2B-3DDC84)
+
+</p>
 
 **A free, open-source video downloader for Android with a share-sheet workflow — no ads, no analytics, no
 trackers.** Share a link from Instagram, Facebook, YouTube, TikTok, X, Vimeo, Reddit… to ClipSave (or paste it

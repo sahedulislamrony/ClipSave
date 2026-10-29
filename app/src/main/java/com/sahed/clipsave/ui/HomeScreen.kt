@@ -50,6 +50,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.sahed.clipsave.core.UrlParser
+import com.sahed.clipsave.ui.theme.AppMark
 import com.sahed.clipsave.ui.theme.ClipType
 import com.sahed.clipsave.ui.theme.GlassButton
 import com.sahed.clipsave.ui.theme.GlassIconButton
@@ -94,6 +95,8 @@ fun HomeScreen(
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            AppMark(size = 76.dp)
+            Spacer(Modifier.height(16.dp))
             Text(
                 buildAnnotatedString {
                     append("Clip")

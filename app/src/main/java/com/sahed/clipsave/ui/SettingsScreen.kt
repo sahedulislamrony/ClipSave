@@ -229,14 +229,6 @@ fun SettingsScreen(container: AppContainer, insets: PaddingValues, onOpenPage: (
         }
 
         Section("Other") {
-            SettingRow(icon = Icons.Outlined.HelpOutline, title = "How it works", onClick = { onOpenPage(MainActivity.PAGE_HOW) }) { Value(null) }
-            Divider()
-            SettingRow(icon = Icons.Outlined.Gavel, title = "Terms", onClick = { onOpenPage(MainActivity.PAGE_TERMS) }) { Value(null) }
-            Divider()
-            SettingRow(icon = Icons.Outlined.BugReport, title = "Report a bug", onClick = { sendFeedback(context, "Bug report") }) { Value(null) }
-            Divider()
-            SettingRow(icon = Icons.Outlined.Lightbulb, title = "Request a feature", onClick = { sendFeedback(context, "Feature request") }) { Value(null) }
-            Divider()
             SettingRow(
                 icon = Icons.Outlined.Refresh,
                 iconWell = true,
@@ -265,6 +257,14 @@ fun SettingsScreen(container: AppContainer, insets: PaddingValues, onOpenPage: (
                     },
                 )
             }
+            Divider()
+            SettingRow(icon = Icons.Outlined.HelpOutline, title = "How it works", onClick = { onOpenPage(MainActivity.PAGE_HOW) }) { Value(null) }
+            Divider()
+            SettingRow(icon = Icons.Outlined.Gavel, title = "Terms", onClick = { onOpenPage(MainActivity.PAGE_TERMS) }) { Value(null) }
+            Divider()
+            SettingRow(icon = Icons.Outlined.BugReport, title = "Report a bug", onClick = { sendFeedback(context, "Bug report") }) { Value(null) }
+            Divider()
+            SettingRow(icon = Icons.Outlined.Lightbulb, title = "Request a feature", onClick = { sendFeedback(context, "Feature request") }) { Value(null) }
         }
     }
 }

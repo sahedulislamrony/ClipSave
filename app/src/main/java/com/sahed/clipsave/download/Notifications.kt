@@ -33,7 +33,7 @@ object Notifications {
     fun progress(context: Context, workId: UUID, title: String, percent: Int?, text: String?): Notification {
         val cancel = WorkManager.getInstance(context).createCancelPendingIntent(workId)
         return NotificationCompat.Builder(context, CHANNEL_PROGRESS)
-            .setSmallIcon(android.R.drawable.stat_sys_download)
+            .setSmallIcon(R.drawable.ic_stat_clipsave)
             .setContentTitle(title)
             .setContentText(text)
             .setOnlyAlertOnce(true)
@@ -46,7 +46,7 @@ object Notifications {
 
     fun finished(context: Context, downloadId: String, title: String, uri: String?, mime: String?) {
         val n = NotificationCompat.Builder(context, CHANNEL_DONE)
-            .setSmallIcon(android.R.drawable.stat_sys_download_done)
+            .setSmallIcon(R.drawable.ic_stat_clipsave)
             .setContentTitle(title)
             .setContentText("Download complete")
             .setAutoCancel(true)
@@ -74,7 +74,7 @@ object Notifications {
             if (failed > 0) append(" · $failed failed")
         }
         val n = NotificationCompat.Builder(context, CHANNEL_DONE)
-            .setSmallIcon(if (saved == 0) android.R.drawable.stat_notify_error else android.R.drawable.stat_sys_download_done)
+            .setSmallIcon(if (saved == 0) android.R.drawable.stat_notify_error else R.drawable.ic_stat_clipsave)
             .setContentTitle(folder)
             .setContentText(text)
             .setAutoCancel(true)

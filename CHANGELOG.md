@@ -22,6 +22,7 @@ First public release.
   automatic fallback if the chosen folder becomes unavailable.
 - Optional Instagram and Facebook sign-in for private or age-gated posts (session cookies only).
 - Wi-Fi only mode, light/dark/system theme, in-app yt-dlp updates (manual and daily).
+- ClipSave logo: adaptive and themed launcher icon, status-bar icon, in-app mark and docs artwork.
 - Terms of Use and disclaimer (`TERMS.md`), agreed on first launch and readable under Settings → Other → Terms.
 - Signed per-ABI release APKs, `build.sh`, and a GitHub Actions release workflow.
 

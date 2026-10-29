@@ -1,6 +1,7 @@
 package com.sahed.clipsave.ui.theme
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +27,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import com.sahed.clipsave.R
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
@@ -224,14 +226,17 @@ fun <T> Segmented(
     }
 }
 
-/** The mark: iris rounded square with a down arrow into a tray. */
+/** The mark: the two-card glyph on a tile that is near-white in light and near-black in dark, like the launcher icon. */
 @Composable
 fun AppMark(modifier: Modifier = Modifier, size: Dp = 40.dp) {
     val c = LocalClipColors.current
+    val shape = RoundedCornerShape(size * 0.3f)
     Box(
-        modifier.size(size).clip(RoundedCornerShape(size * 0.3f)).background(c.primary),
+        modifier.size(size).clip(shape)
+            .background(if (c.dark) Color(0xFF0B0A0F) else Color(0xFFFAF8FF))
+            .border(1.dp, if (c.dark) c.primary.copy(alpha = 0.45f) else c.line, shape),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(Icons.Rounded.Download, null, tint = c.onPrimary, modifier = Modifier.size(size * 0.52f))
+        Image(painterResource(R.drawable.logo_glyph), "ClipSave", Modifier.size(size * 0.66f))
     }
 }

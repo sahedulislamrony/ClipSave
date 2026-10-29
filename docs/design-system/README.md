@@ -31,7 +31,20 @@ The **dock** floats 16dp from the sides and 26dp from the bottom: a single pill 
 
 ## Iconography
 
-In-house line icons, 24 grid, 1.9 stroke, round caps, `currentColor`. 22px in the dock, 18px in rows and buttons. The mark: iris rounded square with a down arrow into a tray.
+In-house line icons, 24 grid, 1.9 stroke, round caps, `currentColor`. 22px in the dock, 18px in rows and buttons.
+
+## Logo
+
+The mark is two overlapping cards — a lavender one behind an iris one with a bookmark cut-out. Three artworks ship in [`docs/assets`](../assets): `logo-light` (white tile, iris glyph), `logo-dark` (near-black tile with an iris glow) and `logo-mono` (black on white, for single-colour uses). Originals are in [`docs/assets/source`](../assets/source).
+
+| Where | What |
+| --- | --- |
+| Launcher icon | Adaptive icon: `#0B0A0F` background + the transparent glyph (`ic_launcher_foreground`), plus a `ic_launcher_monochrome` layer for themed icons (Android 13+) |
+| In the app | `AppMark`: the glyph (`logo_glyph`) on a near-white tile in light and a near-black tile with an iris rim in dark — on Welcome and Home |
+| Notifications | `ic_stat_clipsave`: white silhouette, as the status bar requires |
+| Docs | `docs/assets/logo-*.png`; `design-system/assets/logo-glyph.png` drives `.cs-mark` in the HTML previews |
+
+Keep clear space of at least a quarter of the mark's width, never recolour the glyph, and use `logo-mono` rather than a filter when one colour is needed.
 
 ## Screens
 
@@ -45,3 +58,4 @@ Home and Downloads previews predate the implemented layouts described below.
 | QualitySheet | Glass sheet: name field, Video/Audio, up to 4 options, Download. Playlist variant adds folder + numbering |
 | DownloadsScreen | Pause/Resume all, filters (All · Active · Saved · Playlists), sections of download rows |
 | SettingsScreen | System (Theme, Notifications), Downloads (Quality, Save to, Wi-Fi only), Accounts, Other |
+| HowItWorks | Timeline of four steps, "Also handy" tiles, "Works with" pills |
