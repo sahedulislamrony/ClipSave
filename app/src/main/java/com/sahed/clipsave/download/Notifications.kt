@@ -9,19 +9,29 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.work.WorkManager
 import com.sahed.clipsave.R
 import com.sahed.clipsave.ui.MainActivity
-import java.util.UUID
 
 object Notifications {
-    const val CHANNEL_PROGRESS = "downloads"
+    /** Was "downloads" at IMPORTANCE_LOW. A channel's importance can't be raised after creation, so it has a new id. */
+    const val CHANNEL_PROGRESS = "downloads_active"
+    private const val OLD_CHANNEL_PROGRESS = "downloads"
     const val CHANNEL_DONE = "done"
+
+    /** Brand iris: Android tints the white logo's backdrop with it where it draws one. */
+    private const val BRAND = 0xFF5B3BF0.toInt()
 
     fun createChannels(context: Context) {
         val nm = context.getSystemService(NotificationManager::class.java)
+        nm.deleteNotificationChannel(OLD_CHANNEL_PROGRESS)
+        // DEFAULT, not LOW: Android files low-importance notifications under "Silent" and hides their
+        // status-bar icon, so a running download looked like nothing was happening. Still no sound.
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_PROGRESS, context.getString(R.string.channel_downloads), NotificationManager.IMPORTANCE_LOW),
+            NotificationChannel(CHANNEL_PROGRESS, context.getString(R.string.channel_downloads), NotificationManager.IMPORTANCE_DEFAULT).apply {
+                setSound(null, null)
+                enableVibration(false)
+                setShowBadge(false)
+            },
         )
         nm.createNotificationChannel(
             NotificationChannel(CHANNEL_DONE, context.getString(R.string.channel_done), NotificationManager.IMPORTANCE_DEFAULT),
@@ -30,42 +40,44 @@ object Notifications {
 
     fun idFor(downloadId: String) = downloadId.hashCode()
 
-    fun progress(context: Context, workId: UUID, title: String, percent: Int?, text: String?): Notification {
-        val cancel = WorkManager.getInstance(context).createCancelPendingIntent(workId)
-        return NotificationCompat.Builder(context, CHANNEL_PROGRESS)
-            .setSmallIcon(R.drawable.ic_stat_clipsave)
+    /** Ongoing progress; tapping opens the Downloads tab, where pausing and canceling live. */
+    fun progress(context: Context, title: String, percent: Int?, text: String?): Notification =
+        builder(context, CHANNEL_PROGRESS)
             .setContentTitle(title)
             .setContentText(text)
             .setOnlyAlertOnce(true)
             .setOngoing(true)
+            .setSilent(false)
             .setProgress(100, percent ?: 0, percent == null)
-            .setContentIntent(openApp(context))
-            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Cancel", cancel)
+            .setContentIntent(openDownloads(context))
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
-    }
 
     fun finished(context: Context, downloadId: String, title: String, uri: String?, mime: String?) {
-        val n = NotificationCompat.Builder(context, CHANNEL_DONE)
-            .setSmallIcon(R.drawable.ic_stat_clipsave)
+        val n = builder(context, CHANNEL_DONE)
             .setContentTitle(title)
             .setContentText("Download complete")
             .setAutoCancel(true)
-            .setContentIntent(if (uri != null) openFile(context, uri, mime) else openApp(context))
+            .setContentIntent(if (uri != null) openFile(context, uri, mime) else openDownloads(context))
             .build()
         notify(context, idFor(downloadId), n)
     }
 
     fun failed(context: Context, downloadId: String, title: String, reason: String?) {
-        val n = NotificationCompat.Builder(context, CHANNEL_DONE)
-            .setSmallIcon(android.R.drawable.stat_notify_error)
+        val n = builder(context, CHANNEL_DONE)
             .setContentTitle("Download failed")
             .setContentText(title)
             .setStyle(NotificationCompat.BigTextStyle().bigText("$title\n${reason.orEmpty()}"))
             .setAutoCancel(true)
-            .setContentIntent(openApp(context))
+            .setContentIntent(openDownloads(context))
             .build()
         notify(context, idFor(downloadId), n)
     }
+
+    /** Every notification carries the white ClipSave mark on the brand colour. */
+    private fun builder(context: Context, channel: String) = NotificationCompat.Builder(context, channel)
+        .setSmallIcon(R.drawable.ic_stat_clipsave)
+        .setColor(BRAND)
 
     /** One summary per playlist instead of a notification per video. */
     fun batchFinished(context: Context, batchId: String, folder: String, saved: Int, failed: Int) {
@@ -73,12 +85,11 @@ object Notifications {
             append(if (saved == 1) "1 video saved" else "$saved videos saved")
             if (failed > 0) append(" · $failed failed")
         }
-        val n = NotificationCompat.Builder(context, CHANNEL_DONE)
-            .setSmallIcon(if (saved == 0) android.R.drawable.stat_notify_error else R.drawable.ic_stat_clipsave)
+        val n = builder(context, CHANNEL_DONE)
             .setContentTitle(folder)
             .setContentText(text)
             .setAutoCancel(true)
-            .setContentIntent(openApp(context))
+            .setContentIntent(openDownloads(context))
             .build()
         // Its own id: the playlist's progress id belongs to the foreground worker, which clears it on exit.
         notify(context, idFor("$batchId-done"), n)
@@ -95,9 +106,11 @@ object Notifications {
         if (mgr.areNotificationsEnabled()) runCatching { mgr.notify(id, n) }
     }
 
-    private fun openApp(context: Context): PendingIntent = PendingIntent.getActivity(
+    private fun openDownloads(context: Context): PendingIntent = PendingIntent.getActivity(
         context, 0,
-        Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+        Intent(context, MainActivity::class.java)
+            .putExtra(MainActivity.EXTRA_TAB, MainActivity.TAB_DOWNLOADS)
+            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP),
         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
     )
 

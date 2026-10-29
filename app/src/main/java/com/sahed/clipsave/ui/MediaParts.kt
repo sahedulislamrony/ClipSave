@@ -1,6 +1,15 @@
 package com.sahed.clipsave.ui
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -71,9 +80,23 @@ fun PlayDot(audio: Boolean, modifier: Modifier = Modifier, size: Dp = 34.dp) {
 /** Pill progress bar; a short stub while the percentage is still unknown. */
 @Composable
 fun ProgressBar(progress: Float, determinate: Boolean, fill: Color, modifier: Modifier = Modifier, track: Color = fill.copy(alpha = 0.28f)) {
-    Box(modifier.fillMaxWidth().height(4.dp).clip(CircleShape).background(track)) {
-        val frac = if (determinate) progress.coerceIn(0f, 1f) else 0.15f
-        Box(Modifier.fillMaxHeight().fillMaxWidth(frac).clip(CircleShape).background(fill))
+    BoxWithConstraints(modifier.fillMaxWidth().height(4.dp).clip(CircleShape).background(track)) {
+        if (determinate) {
+            Box(Modifier.fillMaxHeight().fillMaxWidth(progress.coerceIn(0f, 1f)).clip(CircleShape).background(fill))
+        } else {
+            // Indeterminate: a short segment sweeping across, so waiting reads as working.
+            val sweep by rememberInfiniteTransition(label = "sweep").animateFloat(
+                initialValue = -0.3f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(tween(1100, easing = LinearEasing)),
+                label = "sweep",
+            )
+            Box(
+                Modifier.fillMaxHeight().fillMaxWidth(0.3f)
+                    .offset { IntOffset((sweep * constraints.maxWidth).toInt(), 0) }
+                    .clip(CircleShape).background(fill),
+            )
+        }
     }
 }
 

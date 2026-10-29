@@ -79,6 +79,7 @@ import com.sahed.clipsave.BuildConfig
 import com.sahed.clipsave.core.CookieStore
 import com.sahed.clipsave.core.EngineState
 import com.sahed.clipsave.core.Prefs
+import com.sahed.clipsave.core.UpdateState
 import com.sahed.clipsave.ui.theme.ClipType
 import com.sahed.clipsave.ui.theme.GlassButton
 import com.sahed.clipsave.ui.theme.LocalClipColors
@@ -97,8 +98,6 @@ private val QUALITY_CHOICES = listOf(
 
 private val THEME_LABELS = mapOf(Prefs.THEME_LIGHT to "Light", Prefs.THEME_DARK to "Dark", Prefs.THEME_SYSTEM to "System")
 
-private enum class UpdateUi { Idle, Checking, UpToDate, Failed }
-
 @Composable
 fun SettingsScreen(container: AppContainer, insets: PaddingValues, onOpenPage: (String) -> Unit) {
     val c = LocalClipColors.current
@@ -107,7 +106,8 @@ fun SettingsScreen(container: AppContainer, insets: PaddingValues, onOpenPage: (
     var quality by remember { mutableStateOf(prefs.defaultQuality) }
     var wifiOnly by remember { mutableStateOf(prefs.wifiOnly) }
     var accountsTick by remember { mutableIntStateOf(0) }
-    var update by remember { mutableStateOf(UpdateUi.Idle) }
+    val appUpdate by container.updater.state.collectAsStateWithLifecycle()
+    var engineUpdating by remember { mutableStateOf(false) }
     var qualityMenu by remember { mutableStateOf(false) }
     var folderMenu by remember { mutableStateOf(false) }
     var folder by remember { mutableStateOf(prefs.downloadTree) }
@@ -236,22 +236,24 @@ fun SettingsScreen(container: AppContainer, insets: PaddingValues, onOpenPage: (
                 caption = if (engine is EngineState.Failed) "Unavailable" else "v${BuildConfig.VERSION_NAME}",
                 captionColor = if (engine is EngineState.Failed) c.danger else c.inkMuted,
             ) {
+                val checking = appUpdate is UpdateState.Checking || engineUpdating
                 GlassButton(
-                    text = when (update) {
-                        UpdateUi.Idle -> "Check"
-                        UpdateUi.Checking -> "Checking…"
-                        UpdateUi.UpToDate -> "Up to date"
-                        UpdateUi.Failed -> "Retry"
+                    text = when {
+                        checking -> "Checking…"
+                        appUpdate is UpdateState.CheckFailed -> "Retry"
+                        appUpdate is UpdateState.UpToDate -> "Up to date"
+                        else -> "Check"
                     },
-                    enabled = update != UpdateUi.Checking && update != UpdateUi.UpToDate && engine is EngineState.Ready,
+                    enabled = !checking,
                     onClick = {
-                        update = UpdateUi.Checking
-                        scope.launch {
-                            update = try {
-                                container.engine.update()
-                                UpdateUi.UpToDate
-                            } catch (e: Throwable) {
-                                UpdateUi.Failed
+                        // A newer app release takes over the screen (MainActivity); otherwise this also
+                        // refreshes yt-dlp so site extractors stay current.
+                        container.updater.check()
+                        if (engine is EngineState.Ready) {
+                            engineUpdating = true
+                            scope.launch {
+                                runCatching { container.engine.update() }
+                                engineUpdating = false
                             }
                         }
                     },

@@ -19,8 +19,19 @@ sealed interface ExtractState {
     data object Idle : ExtractState
     data class Loading(val url: String) : ExtractState
     data class Ready(val info: MediaInfo) : ExtractState
-    /** [preferred] is the saved default quality, preselected; a playlist never auto-starts. */
-    data class PlaylistReady(val playlist: PlaylistInfo, val numbering: Numbering, val preferred: FormatOption?) : ExtractState
+    /**
+     * [preferred] is the saved default quality, preselected; a playlist never auto-starts.
+     * [selected] holds playlist indexes ([com.sahed.clipsave.core.PlaylistEntry.index]), at most
+     * [PlaylistInfo.MAX_SELECTED] across every page read so far.
+     */
+    data class PlaylistReady(
+        val playlist: PlaylistInfo,
+        val numbering: Numbering,
+        val preferred: FormatOption?,
+        val selected: Set<Int>,
+        val loadingMore: Boolean = false,
+        val moreError: String? = null,
+    ) : ExtractState
     data class Error(val message: String, val needsLogin: Boolean) : ExtractState
     data class Started(val title: String) : ExtractState
 }
@@ -41,7 +52,13 @@ class ExtractViewModel(app: Application) : AndroidViewModel(app) {
                 if (!single && UrlParser.isYoutubePlaylist(url)) {
                     val playlist = container.extractor.fetchPlaylist(url)
                     val preferred = container.prefs.defaultQuality.takeIf { it != "ask" }?.let { FormatOption.pick(FormatOption.playlist(), it) }
-                    _state.value = ExtractState.PlaylistReady(playlist, Numbering.of(container.prefs.playlistNumbering), preferred)
+                    _state.value = ExtractState.PlaylistReady(
+                        playlist,
+                        Numbering.of(container.prefs.playlistNumbering),
+                        preferred,
+                        // The first page starts selected, up to the cap.
+                        selected = playlist.entries.take(PlaylistInfo.MAX_SELECTED).map { it.index }.toSet(),
+                    )
                     return@launch
                 }
                 val info = container.extractor.fetch(url)
@@ -60,10 +77,45 @@ class ExtractViewModel(app: Application) : AndroidViewModel(app) {
         _state.value = ExtractState.Started(fileName?.takeIf { it.isNotBlank() } ?: info.title)
     }
 
-    fun downloadPlaylist(playlist: PlaylistInfo, option: FormatOption, folder: String, numbering: Numbering) {
+    /** Reads the playlist's next page; its videos start unselected so the current pick stays as it is. */
+    fun loadMore() {
+        val s = _state.value as? ExtractState.PlaylistReady ?: return
+        val start = s.playlist.nextStart ?: return
+        if (s.loadingMore) return
+        _state.value = s.copy(loadingMore = true, moreError = null)
+        job = viewModelScope.launch {
+            val result = runCatching { container.extractor.fetchPlaylist(s.playlist.url, start) }
+            val now = _state.value as? ExtractState.PlaylistReady ?: return@launch
+            _state.value = result.fold(
+                onSuccess = { page -> now.copy(playlist = now.playlist.plus(page), loadingMore = false) },
+                onFailure = { e -> now.copy(loadingMore = false, moreError = (e as? ExtractFailure)?.message ?: "Couldn't load more videos") },
+            )
+        }
+    }
+
+    /** @return false when selecting would go past [PlaylistInfo.MAX_SELECTED]. */
+    fun toggle(index: Int): Boolean {
+        val s = _state.value as? ExtractState.PlaylistReady ?: return true
+        val sel = s.selected
+        if (index !in sel && sel.size >= PlaylistInfo.MAX_SELECTED) return false
+        _state.value = s.copy(selected = if (index in sel) sel - index else sel + index)
+        return true
+    }
+
+    /** Clears the selection, or when nothing is selected, selects the first [PlaylistInfo.MAX_SELECTED] videos read. */
+    fun clearOrSelectAll() {
+        val s = _state.value as? ExtractState.PlaylistReady ?: return
+        _state.value = s.copy(
+            selected = if (s.selected.isNotEmpty()) emptySet()
+            else s.playlist.entries.take(PlaylistInfo.MAX_SELECTED).map { it.index }.toSet(),
+        )
+    }
+
+    fun downloadPlaylist(s: ExtractState.PlaylistReady, option: FormatOption, folder: String, numbering: Numbering) {
         container.prefs.playlistNumbering = numbering.key
-        val count = container.scheduler.enqueuePlaylist(playlist, option, folder, numbering)
-        _state.value = ExtractState.Started("${folder.ifBlank { playlist.title }} ($count videos)")
+        val picked = s.playlist.entries.filter { it.index in s.selected }
+        val count = container.scheduler.enqueuePlaylist(s.playlist, picked, option, folder, numbering)
+        _state.value = ExtractState.Started("${folder.ifBlank { s.playlist.title }} ($count videos)")
     }
 
     fun reset() {

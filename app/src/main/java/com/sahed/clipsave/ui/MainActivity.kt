@@ -29,7 +29,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sahed.clipsave.BuildConfig
 import com.sahed.clipsave.ClipSaveApp
+import com.sahed.clipsave.core.UpdateState
 import com.sahed.clipsave.ui.theme.ClipSaveTheme
 import com.sahed.clipsave.ui.theme.clipBackground
 import dev.chrisbanes.haze.hazeSource
@@ -53,6 +55,12 @@ class MainActivity : ComponentActivity() {
                 var page by rememberSaveable { mutableStateOf<String?>(null) }
                 val active by container.downloads.items.collectAsStateWithLifecycle()
                 val askNotifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
+                val update by container.updater.state.collectAsStateWithLifecycle()
+
+                (update as? UpdateState.Pending)?.let {
+                    UpdateScreen(it, onUpdate = container.updater::install)
+                    return@ClipSaveTheme
+                }
 
                 LaunchedEffect(welcomed) {
                     if (!welcomed) return@LaunchedEffect
@@ -108,6 +116,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Every time the app comes to the front; a newer release takes over the screen until installed.
+        // Debug builds are signed with the debug key and can't install a release over themselves.
+        if (!BuildConfig.DEBUG) (application as ClipSaveApp).container.updater.check()
     }
 
     override fun onNewIntent(intent: Intent) {

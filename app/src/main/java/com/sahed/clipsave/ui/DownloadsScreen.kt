@@ -346,10 +346,17 @@ private fun DownloadRow(
             Spacer(Modifier.height(4.dp))
             when {
                 running || processing -> {
-                    ProgressBar(item.progress, running, c.primary, track = c.surface)
+                    // Before the first byte yt-dlp starts up, re-reads the video and solves YouTube's player
+                    // challenge (several seconds); a frozen "0%" there looked stuck.
+                    val preparing = running && item.progress <= 0f && item.etaSec == null
+                    ProgressBar(item.progress, running && !preparing, c.primary, track = c.surface)
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        if (running) listOfNotNull("${(item.progress * 100).toInt()}%", item.etaSec?.let { "${it}s" }, item.optionLabel).joinToString(" · ") else "Saving…",
+                        when {
+                            preparing -> listOf("Preparing…", item.optionLabel).joinToString(" · ")
+                            running -> listOfNotNull("${(item.progress * 100).toInt()}%", item.etaSec?.let { "${it}s" }, item.optionLabel).joinToString(" · ")
+                            else -> "Saving…"
+                        },
                         style = ClipType.Caption, color = c.onPrimarySoft, maxLines = 1,
                     )
                 }

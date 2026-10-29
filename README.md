@@ -27,6 +27,29 @@ for audio), or to a folder you choose. Powered by [yt-dlp](https://github.com/yt
 > It is provided without warranty and is not affiliated with any service it can download from. Read the
 > [Terms of Use and Disclaimer](TERMS.md); you agree to them on first launch (also in Settings → Other → Terms).
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screens/home.jpg" width="200" alt="Home screen with a link field"><br><sub>Home</sub></td>
+    <td align="center"><img src="docs/screens/quality.jpg" width="200" alt="Quality sheet listing resolutions with sizes"><br><sub>Choose quality</sub></td>
+    <td align="center"><img src="docs/screens/playlist.jpg" width="200" alt="Playlist sheet with folder, numbering and estimated sizes"><br><sub>Playlist</sub></td>
+    <td align="center"><img src="docs/screens/playlist-videos.jpg" width="200" alt="Playlist video list with checkboxes and a selected count"><br><sub>Pick up to 100 videos</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screens/downloads.jpg" width="200" alt="Downloads tab with one preparing and three queued"><br><sub>Downloads</sub></td>
+    <td align="center"><img src="docs/screens/downloads-saved.jpg" width="200" alt="Saved downloads numbered by playlist position"><br><sub>Saved</sub></td>
+    <td align="center"><img src="docs/screens/settings.jpg" width="200" alt="Settings: theme, quality, folder, accounts, updates"><br><sub>Settings</sub></td>
+    <td align="center"><img src="docs/screens/how-it-works.jpg" width="200" alt="How it works: share, paste, choose, done"><br><sub>How it works</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screens/welcome.jpg" width="200" alt="First-launch welcome screen"><br><sub>Welcome</sub></td>
+    <td align="center"><img src="docs/screens/update.jpg" width="200" alt="Update required screen with download button"><br><sub>In-app update</sub></td>
+    <td align="center"><img src="docs/screens/home-dark.jpg" width="200" alt="Home screen in dark theme"><br><sub>Dark theme</sub></td>
+    <td align="center"><img src="docs/screens/downloads-dark.jpg" width="200" alt="Downloads tab in dark theme"><br><sub>Dark theme</sub></td>
+  </tr>
+</table>
+
 ## Features
 
 * **Share or paste** — `Share → ClipSave` from any app, or paste a link on Home (a link copied elsewhere is
@@ -35,10 +58,15 @@ for audio), or to a folder you choose. Powered by [yt-dlp](https://github.com/yt
   **Settings → Quality** to a fixed default (Best, 1080p, 720p, 480p, MP3) for one-tap downloads that skip the
   sheet; **Ask** (default) always shows it.
 * **YouTube playlists** — a link with `list=` opens a playlist sheet: folder name, numbering (1→N, N→1, none)
-  and one quality cap. Videos download one after another into `<download folder>/<playlist name>/`;
-  **Downloads → Playlists** groups them per playlist.
-* **Background downloads** — foreground service with a progress notification (Cancel action); survives leaving
-  the app.
+  and one quality cap. Videos are listed 100 at a time (**Load next 100** / **Load remaining N**); tick the ones
+  you want, up to 100 per download, from any mix of pages. Each quality shows an estimated total size for what's
+  ticked. Files are numbered by their place in the whole playlist, so later batches sort alongside earlier ones.
+  Videos download one after another into `<download folder>/<playlist name>/`; **Downloads → Playlists** groups
+  them per playlist.
+* **Background downloads** — foreground service with a progress notification; tap it to open Downloads, where
+  you pause or cancel. Survives leaving the app.
+* **In-app updates** — checks GitHub Releases each time the app opens (or **Settings → Check for updates**) and
+  installs the same APK variant you have (arm64-v8a, armeabi-v7a, x86_64 or universal).
 * **Pause / resume** — per download, per playlist, or **Pause all / Resume all**; partial files are kept, so
   resuming continues where it stopped. Failed or canceled items can be retried.
 * **Your folder** — save to the default folder or pick any folder with the system picker; no storage permission.

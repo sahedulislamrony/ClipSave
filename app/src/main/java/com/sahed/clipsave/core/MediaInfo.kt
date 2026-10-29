@@ -11,19 +11,48 @@ data class MediaInfo(
     val options: List<FormatOption>,
 )
 
-/** A YouTube playlist, read with `--flat-playlist` (titles and links only, no per-video formats). */
+/**
+ * A YouTube playlist, read with `--flat-playlist` (titles and links only, no per-video formats).
+ * Read [PAGE_SIZE] videos at a time: long playlists (and endless Mixes) would otherwise take minutes.
+ */
 data class PlaylistInfo(
     val url: String,
     val title: String,
     val uploader: String?,
     val thumbnail: String?,
     val platform: Platform,
+    /** The videos read so far, in playlist order. */
     val entries: List<PlaylistEntry>,
     /** Set when the link was a video opened inside the playlist, so the sheet can offer just that video. */
     val videoUrl: String?,
-)
+    /** The playlist's full length when YouTube reports it. */
+    val total: Int? = null,
+    /** 1-based position of the next unread page, or null when everything has been read. */
+    val nextStart: Int? = null,
+) {
+    /** Size of the next page: a full one, or whatever is left. Null when unknown or nothing is left. */
+    val nextPageSize: Int?
+        get() = nextStart?.let { start -> total?.let { (it - start + 1).coerceIn(0, PAGE_SIZE) } ?: PAGE_SIZE }?.takeIf { it > 0 }
 
-data class PlaylistEntry(val url: String, val title: String, val thumbnail: String?)
+    /** What file numbers are padded against: the whole playlist, so numbers match across batches. */
+    val numberingTotal: Int get() = maxOf(total ?: 0, (entries.maxOfOrNull { it.index } ?: -1) + 1)
+
+    /** Adds the next page's videos. */
+    fun plus(page: PlaylistInfo) = copy(
+        entries = entries + page.entries.filter { e -> entries.none { it.index == e.index } },
+        total = page.total ?: total,
+        nextStart = page.nextStart,
+    )
+
+    companion object {
+        const val PAGE_SIZE = 100
+        /** Most videos one playlist download can queue. */
+        const val MAX_SELECTED = 100
+    }
+}
+
+/** [index] is the 0-based position in the playlist; it numbers the file. */
+data class PlaylistEntry(val url: String, val title: String, val thumbnail: String?, val index: Int, val durationSec: Long? = null)
 
 /** How playlist files are numbered at the front of their names. */
 enum class Numbering(val key: String) {
@@ -92,6 +121,27 @@ data class FormatOption(
         /** A playlist has no per-video formats up front, so it offers fixed caps; each video gets the closest it has. */
         fun playlist(): List<FormatOption> =
             listOf(video(null, null), video(1080, null), video(720, null), video(480, null), audio("mp3", null), audio("m4a", null))
+
+        /**
+         * Typical bits per second (video + audio) for a row, for estimating playlist sizes before any
+         * video is resolved. Based on YouTube's H.264 + AAC streams, which the downloader prefers.
+         */
+        fun bitrate(option: FormatOption): Long = when {
+            option.audioFormat == KEY_MP3 -> 245_000 // --audio-quality 0 ≈ LAME V0
+            option.isAudio -> 130_000
+            else -> when (option.height ?: 0) {
+                0 -> 4_000_000 // "Best": usually 1080p or more
+                in 1081..Int.MAX_VALUE -> 6_000_000
+                in 721..1080 -> 3_000_000
+                in 481..720 -> 1_700_000
+                in 361..480 -> 900_000
+                else -> 600_000
+            }
+        }
+
+        /** Approximate bytes for [entries] at [option]; videos with no known duration count as zero. */
+        fun estimateBytes(entries: Collection<PlaylistEntry>, option: FormatOption): Long =
+            entries.sumOf { (it.durationSec ?: 0L) * bitrate(option) / 8 }
 
         /** Choose the row that matches a saved default ("1080", "mp3", "best"), else the closest lower quality. */
         fun pick(options: List<FormatOption>, preferred: String): FormatOption? {

@@ -1,7 +1,11 @@
 package com.sahed.clipsave.ui
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,9 +19,17 @@ import com.sahed.clipsave.ui.theme.ClipSaveTheme
  */
 class ShareReceiverActivity : ComponentActivity() {
     private val vm: ExtractViewModel by viewModels()
+    private val askNotifications = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Someone who only ever shares into ClipSave never opens the app, where this is otherwise asked;
+        // without it Android 13+ drops the download's progress and "saved" notifications.
+        if (savedInstanceState == null && Build.VERSION.SDK_INT >= 33 &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
         setContent {
             ClipSaveTheme {
                 ExtractSheet(

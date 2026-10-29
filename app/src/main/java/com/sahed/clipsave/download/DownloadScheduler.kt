@@ -12,6 +12,7 @@ import androidx.work.workDataOf
 import com.sahed.clipsave.core.FormatOption
 import com.sahed.clipsave.core.MediaInfo
 import com.sahed.clipsave.core.Numbering
+import com.sahed.clipsave.core.PlaylistEntry
 import com.sahed.clipsave.core.PlaylistInfo
 import com.sahed.clipsave.core.Prefs
 import com.yausername.youtubedl_android.YoutubeDL
@@ -45,16 +46,17 @@ class DownloadScheduler(
     }
 
     /**
-     * Queues every video of [playlist] into `<download folder>/<folder>/`, numbered per [numbering].
+     * Queues the [picked] videos of [playlist] into `<download folder>/<folder>/`, numbered per [numbering]
+     * by their place in the whole playlist, so batches downloaded on different days still sort together.
      * They download one at a time in a single worker; returns how many were queued.
      */
-    fun enqueuePlaylist(playlist: PlaylistInfo, option: FormatOption, folder: String, numbering: Numbering): Int {
+    fun enqueuePlaylist(playlist: PlaylistInfo, picked: List<PlaylistEntry>, option: FormatOption, folder: String, numbering: Numbering): Int {
         val batchId = UUID.randomUUID().toString()
         val dir = sanitizeFileName(folder).ifEmpty { sanitizeFileName(playlist.title) }.ifEmpty { "Playlist" }
-        val total = playlist.entries.size
+        val total = playlist.numberingTotal
         val now = System.currentTimeMillis()
-        val items = playlist.entries.mapIndexed { i, entry ->
-            val name = sanitizeFileName(numbering.fileName(entry.title, i, total))
+        val items = picked.take(PlaylistInfo.MAX_SELECTED).sortedBy { it.index }.mapIndexed { i, entry ->
+            val name = sanitizeFileName(numbering.fileName(entry.title, entry.index, total))
             DownloadItem(
                 id = UUID.randomUUID().toString(),
                 url = entry.url,

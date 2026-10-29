@@ -97,7 +97,7 @@ class DownloadWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(c
         val id = item.id
         // Progress is kept so a resumed download doesn't jump back to 0 before yt-dlp reports.
         repo.update(id) { it.copy(status = DownloadStatus.RUNNING, error = null) }
-        setForeground(foreground(notificationId, label, null, "Starting…"))
+        setForeground(foreground(notificationId, label, null, "Preparing…"))
 
         // Not wiped on start: after a pause yt-dlp continues its .part files from here.
         val workDir = workDir(applicationContext, id).apply { mkdirs() }
@@ -178,7 +178,7 @@ class DownloadWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(c
                     Notifications.update(
                         applicationContext, notificationId,
                         Notifications.progress(
-                            applicationContext, id, label,
+                            applicationContext, label,
                             fraction?.let { (it * 100).toInt() },
                             etaSec.takeIf { it > 0 }?.let { "${it}s left" },
                         ),
@@ -193,7 +193,7 @@ class DownloadWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(c
 
     private fun foreground(notificationId: Int, title: String, percent: Int?, text: String?) = ForegroundInfo(
         notificationId,
-        Notifications.progress(applicationContext, id, title, percent, text),
+        Notifications.progress(applicationContext, title, percent, text),
         ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
     )
 

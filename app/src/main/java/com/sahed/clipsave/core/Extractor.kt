@@ -12,21 +12,41 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
+import java.io.File
 
 class ExtractFailure(message: String, val needsLogin: Boolean = false) : Exception(message)
 
 /** Resolves a shared link into title/thumbnail/available qualities using yt-dlp. */
-class Extractor(private val engine: Engine, private val cookies: CookieStore) {
+class Extractor(private val engine: Engine, private val cookies: CookieStore, private val cacheDir: File) {
 
     fun baseRequest(url: String, playlist: Boolean = false): YoutubeDLRequest = YoutubeDLRequest(url).apply {
         if (!playlist) addOption("--no-playlist")
         addOption("--no-warnings")
         addOption("--socket-timeout", "20")
+        // youtubedl-android passes --no-cache-dir unless given one, so YouTube's player and signature
+        // functions would be fetched and worked out again on every run.
+        addOption("--cache-dir", cacheDir.absolutePath)
         cookies.mergedFileOrNull()?.let { addOption("--cookies", it.absolutePath) }
     }
 
     suspend fun fetch(url: String): MediaInfo = withContext(Dispatchers.IO) {
-        val info = ytDlp { YoutubeDL.getInstance().getInfo(baseRequest(url)) }
+        val started = System.currentTimeMillis()
+        val info = if (Platform.detect(url) == Platform.YOUTUBE) {
+            // Solving YouTube's player challenge in QuickJS is ~2/3 of a fetch (16 of 24 s on a phone), but
+            // the picker only needs heights and sizes, which come without it. Downloads still solve it.
+            // Fall back to the full run if skipping the player ever loses the video formats.
+            val fast = try {
+                ytDlp { YoutubeDL.getInstance().getInfo(baseRequest(url).addOption("--extractor-args", "youtube:player_skip=js")) }
+            } catch (e: ExtractFailure) {
+                if (e.needsLogin) throw e
+                null
+            }
+            fast?.takeIf { f -> f.formats.orEmpty().any { (it.vcodec ?: "none") != "none" && it.height > 0 } }
+                ?: ytDlp { YoutubeDL.getInstance().getInfo(baseRequest(url)) }
+        } else {
+            ytDlp { YoutubeDL.getInstance().getInfo(baseRequest(url)) }
+        }
+        Log.d("Extractor", "fetched in ${System.currentTimeMillis() - started} ms")
 
         val formats = info.formats.orEmpty()
         val videoFormats = formats.filter { (it.vcodec ?: "none") != "none" && it.height > 0 }
@@ -59,35 +79,48 @@ class Extractor(private val engine: Engine, private val cookies: CookieStore) {
         )
     }
 
-    /** Lists a playlist's videos without resolving each one (`--flat-playlist -J`), so even long playlists open fast. */
-    suspend fun fetchPlaylist(url: String): PlaylistInfo = withContext(Dispatchers.IO) {
+    /**
+     * Lists one page of a playlist's videos, starting at the 1-based position [start], without resolving
+     * each one (`--flat-playlist -J`). yt-dlp stops paging YouTube once it has the requested items, so a
+     * page costs about the same whether the playlist has 100 videos or 3,000.
+     */
+    suspend fun fetchPlaylist(url: String, start: Int = 1): PlaylistInfo = withContext(Dispatchers.IO) {
+        val end = start + PlaylistInfo.PAGE_SIZE - 1
         val request = baseRequest(url, playlist = true).apply {
             addOption("--flat-playlist")
+            addOption("--playlist-items", "$start:$end")
             addOption("-J")
         }
         val out = ytDlp { YoutubeDL.getInstance().execute(request).out }
         val root = runCatching { Json.parseToJsonElement(out).jsonObject }.getOrNull()
             ?: throw ExtractFailure("Could not read this playlist")
 
-        val entries = (root["entries"] as? JsonArray).orEmpty().mapNotNull { el ->
-            val e = el as? JsonObject ?: return@mapNotNull null
-            val title = e.str("title") ?: return@mapNotNull null
+        val raw = (root["entries"] as? JsonArray).orEmpty()
+        val entries = raw.mapIndexedNotNull { i, el ->
+            val e = el as? JsonObject ?: return@mapIndexedNotNull null
+            val title = e.str("title") ?: return@mapIndexedNotNull null
             // Private/deleted videos stay listed in a playlist but can't be downloaded.
-            if (unavailable.matches(title)) return@mapNotNull null
+            if (unavailable.matches(title)) return@mapIndexedNotNull null
             val link = e.str("url")?.takeIf { it.startsWith("http") } ?: e.str("id")?.let { "https://www.youtube.com/watch?v=$it" }
-                ?: return@mapNotNull null
-            PlaylistEntry(link, title, e.lastThumbnail())
+                ?: return@mapIndexedNotNull null
+            val duration = (e["duration"] as? JsonPrimitive)?.contentOrNull?.toDoubleOrNull()?.toLong()?.takeIf { it > 0 }
+            PlaylistEntry(link, title, e.lastThumbnail(), index = start - 1 + i, durationSec = duration)
         }
-        if (entries.isEmpty()) throw ExtractFailure("This playlist has no videos you can download.")
+        val total = (root["playlist_count"] as? JsonPrimitive)?.contentOrNull?.toIntOrNull()?.takeIf { it > 0 }
+        // A short page is the last one; so is reaching the reported length.
+        val nextStart = (end + 1).takeIf { raw.size >= PlaylistInfo.PAGE_SIZE && (total == null || it <= total) }
+        if (entries.isEmpty() && nextStart == null && start == 1) throw ExtractFailure("This playlist has no videos you can download.")
 
         PlaylistInfo(
             url = url,
             title = root.str("title")?.takeIf { it.isNotBlank() } ?: "Playlist",
             uploader = root.str("uploader") ?: root.str("channel"),
-            thumbnail = root.lastThumbnail() ?: entries.first().thumbnail,
+            thumbnail = root.lastThumbnail() ?: entries.firstOrNull()?.thumbnail,
             platform = Platform.detect(url),
             entries = entries,
             videoUrl = UrlParser.youtubeVideoInPlaylist(url),
+            total = total,
+            nextStart = nextStart,
         )
     }
 
