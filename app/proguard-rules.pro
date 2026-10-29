@@ -5,8 +5,8 @@
 -keepattributes *Annotation*, Signature, InnerClasses
 
 # kotlinx.serialization (download history)
--keepclassmembers class com.sahed.clipsave.** { *** Companion; }
--keepclasseswithmembers class com.sahed.clipsave.** { kotlinx.serialization.KSerializer serializer(...); }
+-keepclassmembers class com.sahedul.clipsave.** { *** Companion; }
+-keepclasseswithmembers class com.sahedul.clipsave.** { kotlinx.serialization.KSerializer serializer(...); }
 
 # yt-dlp/ffmpeg unpacking uses commons-compress, which registers zip extra fields reflectively.
 -keep class org.apache.commons.compress.** { *; }

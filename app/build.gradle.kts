@@ -14,16 +14,17 @@ val keystoreProps = Properties().apply {
 }
 
 android {
-    namespace = "com.sahed.clipsave"
+    namespace = "com.sahedul.clipsave"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.sahed.clipsave"
+        // Don't change this once people have installed the app: it's how Android recognises an update.
+        applicationId = "com.sahedul.clipsave"
         // 29+ => scoped storage only (MediaStore), no legacy storage permissions.
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
     }
 
     // yt-dlp's embedded Python + ffmpeg are big, so build one APK per ABI (~70 MB each) plus a
