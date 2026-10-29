@@ -2,7 +2,9 @@ package com.sahed.clipsave.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.view.ViewGroup
 import android.webkit.CookieManager
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
@@ -72,13 +74,25 @@ class LoginActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         factory = { ctx ->
                             WebView(ctx).apply {
+                                // AndroidView defaults to WRAP_CONTENT, which makes WebView report a 0px-tall
+                                // viewport. Instagram/Facebook size their pages with height:100%, so they'd
+                                // collapse to a blank white screen.
+                                layoutParams = ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                )
                                 settings.javaScriptEnabled = true
                                 settings.domStorageEnabled = true
                                 settings.userAgentString =
                                     "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36"
                                 CookieManager.getInstance().setAcceptCookie(true)
                                 CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
-                                webViewClient = WebViewClient()
+                                webViewClient = object : WebViewClient() {
+                                    // Facebook bounces to app-handoff schemes (e.g. sfilvavs://login_via_app)
+                                    // that WebView can't load. Swallow them so the web login form stays up.
+                                    override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) =
+                                        request.url.scheme !in setOf("http", "https")
+                                }
                                 loadUrl(site.loginUrl)
                             }
                         },
