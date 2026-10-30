@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.sahedul.clipsave.ClipSaveApp
 import com.sahedul.clipsave.core.ExtractFailure
 import com.sahedul.clipsave.core.FormatOption
+import com.sahedul.clipsave.core.LinkPreview
 import com.sahedul.clipsave.core.MediaInfo
 import com.sahedul.clipsave.core.Numbering
 import com.sahedul.clipsave.core.PlaylistInfo
@@ -17,7 +18,8 @@ import kotlinx.coroutines.launch
 
 sealed interface ExtractState {
     data object Idle : ExtractState
-    data class Loading(val url: String) : ExtractState
+    /** [preview] fills in (thumbnail first, then title) while yt-dlp reads the link. */
+    data class Loading(val url: String, val preview: LinkPreview? = null) : ExtractState
     data class Ready(val info: MediaInfo) : ExtractState
     /**
      * [preferred] is the saved default quality, preselected; a playlist never auto-starts.
@@ -46,10 +48,20 @@ class ExtractViewModel(app: Application) : AndroidViewModel(app) {
     /** [single] forces one video even when the link also names a playlist ("Only this video"). */
     fun load(url: String, single: Boolean = false) {
         job?.cancel()
-        _state.value = ExtractState.Loading(url)
+        val playlist = !single && UrlParser.isYoutubePlaylist(url)
+        _state.value = ExtractState.Loading(url, if (playlist) null else LinkPreview.instant(url))
         job = viewModelScope.launch {
+            if (!playlist) {
+                // Show what the link is within a moment instead of a bare spinner for the whole yt-dlp run.
+                launch {
+                    val preview = container.extractor.preview(url) ?: return@launch
+                    val now = _state.value as? ExtractState.Loading ?: return@launch
+                    // Keep a thumbnail already on screen rather than swap it for another size of the same image.
+                    if (now.url == url) _state.value = now.copy(preview = preview.copy(thumbnail = now.preview?.thumbnail ?: preview.thumbnail))
+                }
+            }
             try {
-                if (!single && UrlParser.isYoutubePlaylist(url)) {
+                if (playlist) {
                     val playlist = container.extractor.fetchPlaylist(url)
                     val preferred = container.prefs.defaultQuality.takeIf { it != "ask" }?.let { FormatOption.pick(FormatOption.playlist(), it) }
                     _state.value = ExtractState.PlaylistReady(

@@ -6,6 +6,11 @@ All notable changes to ClipSave are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- Sharing a single video shows its thumbnail, title and channel within moments (YouTube, Vimeo, TikTok,
+  Dailymotion) while the qualities are still being read, instead of a bare spinner.
+- Reading a YouTube video's qualities skips the HLS manifest, one fewer request and about 20% faster.
+
 ## [1.2.0] - 2026-10-29
 
 ### Changed

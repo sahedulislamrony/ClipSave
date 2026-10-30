@@ -13,6 +13,9 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import java.io.File
+import java.net.HttpURLConnection
+import java.net.URL
+import java.net.URLEncoder
 
 class ExtractFailure(message: String, val needsLogin: Boolean = false) : Exception(message)
 
@@ -34,9 +37,10 @@ class Extractor(private val engine: Engine, private val cookies: CookieStore, pr
         val info = if (Platform.detect(url) == Platform.YOUTUBE) {
             // Solving YouTube's player challenge in QuickJS is ~2/3 of a fetch (16 of 24 s on a phone), but
             // the picker only needs heights and sizes, which come without it. Downloads still solve it.
-            // Fall back to the full run if skipping the player ever loses the video formats.
+            // The HLS manifest is one more request and a big parse for heights the DASH formats already list.
+            // Fall back to the full run if skipping either ever loses the video formats (live streams).
             val fast = try {
-                ytDlp { YoutubeDL.getInstance().getInfo(baseRequest(url).addOption("--extractor-args", "youtube:player_skip=js")) }
+                ytDlp { YoutubeDL.getInstance().getInfo(baseRequest(url).addOption("--extractor-args", "youtube:player_skip=js;skip=hls")) }
             } catch (e: ExtractFailure) {
                 if (e.needsLogin) throw e
                 null
@@ -77,6 +81,34 @@ class Extractor(private val engine: Engine, private val cookies: CookieStore, pr
             platform = Platform.detect(url),
             options = options,
         )
+    }
+
+    /**
+     * Title, channel and thumbnail from the site's oEmbed endpoint: one small request, a few hundred ms,
+     * while yt-dlp takes seconds. Only for showing something while [fetch] runs; null when the site has
+     * no public oEmbed or the request fails.
+     */
+    suspend fun preview(url: String): LinkPreview? = withContext(Dispatchers.IO) {
+        val endpoint = when (Platform.detect(url)) {
+            Platform.YOUTUBE -> "https://www.youtube.com/oembed?format=json&url="
+            Platform.VIMEO -> "https://vimeo.com/api/oembed.json?url="
+            Platform.TIKTOK -> "https://www.tiktok.com/oembed?url="
+            Platform.DAILYMOTION -> "https://www.dailymotion.com/services/oembed?format=json&url="
+            else -> return@withContext null
+        }
+        val json = runCatching {
+            val conn = URL(endpoint + URLEncoder.encode(url, "UTF-8")).openConnection() as HttpURLConnection
+            try {
+                conn.connectTimeout = 5_000
+                conn.readTimeout = 5_000
+                if (conn.responseCode != 200) return@runCatching null
+                Json.parseToJsonElement(conn.inputStream.bufferedReader().use { it.readText() }).jsonObject
+            } finally {
+                conn.disconnect()
+            }
+        }.getOrNull() ?: return@withContext null
+        LinkPreview(json.str("title")?.takeIf { it.isNotBlank() }, json.str("author_name"), json.str("thumbnail_url"))
+            .takeIf { it.title != null || it.thumbnail != null }
     }
 
     /**
