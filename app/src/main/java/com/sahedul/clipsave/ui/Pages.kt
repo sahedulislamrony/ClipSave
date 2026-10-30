@@ -5,7 +5,14 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
+import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.FolderOpen
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.LinkOff
+import androidx.compose.material.icons.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.PauseCircle
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +51,7 @@ import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,6 +70,7 @@ import com.sahedul.clipsave.ui.theme.ClipType
 import com.sahedul.clipsave.ui.theme.GlassButton
 import com.sahedul.clipsave.ui.theme.GlassIconButton
 import com.sahedul.clipsave.ui.theme.LocalClipColors
+import com.sahedul.clipsave.ui.theme.PrimaryButton
 import com.sahedul.clipsave.ui.theme.Radius
 import com.sahedul.clipsave.ui.theme.panel
 
@@ -114,6 +123,7 @@ private fun Modifier.reveal(index: Int, shown: Boolean): Modifier {
 @Composable
 fun HowItWorksScreen(onBack: () -> Unit) {
     val c = LocalClipColors.current
+    val uri = LocalUriHandler.current
     var shown by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { shown = true }
 
@@ -148,8 +158,12 @@ fun HowItWorksScreen(onBack: () -> Unit) {
             )
         }
 
-        Spacer(Modifier.height(4.dp))
-        Text("Save only what you have the right to.", style = ClipType.Caption, color = c.inkMuted, modifier = Modifier.padding(horizontal = 4.dp))
+        GlassButton(
+            "See details on the web", { uri.openUri("$SITE_URL/#how-it-works") },
+            Modifier.fillMaxWidth().padding(top = 8.dp).reveal(STEPS.size + 4, shown),
+            icon = Icons.Outlined.OpenInNew, height = 48.dp,
+        )
+        Text("Save only what you have the right to.", style = ClipType.Caption, color = c.inkMuted, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
     }
 }
 
@@ -205,40 +219,76 @@ private fun TipTile(tip: Tip, modifier: Modifier = Modifier) {
     }
 }
 
-private const val REPO_URL = "https://github.com/sahedulislamrony/ClipSave"
+private class Term(val icon: ImageVector, val title: String, val body: String)
 
-/** Kept short on purpose; the full text is TERMS.md in the repository. */
+/** Kept short on purpose; the full text is on the website. */
 private val TERMS = listOf(
-    "You choose what to save, and you are responsible for it.",
-    "Only save content you own, that is public domain or openly licensed, or that you have permission to save.",
-    "Follow copyright law, the terms of the sites you use, and the laws where you live. They differ by country.",
-    "Don't use ClipSave to bypass DRM, paywalls or access controls, or to share other people's work without permission.",
-    "ClipSave is free software provided \"as is\", without warranty. The developers are not liable for how it is used, to the extent the law allows.",
-    "ClipSave is not affiliated with Instagram, Facebook, YouTube, TikTok, X or any other service.",
+    Term(Icons.Outlined.Person, "Your choice", "You choose what to save, and you are responsible for it."),
+    Term(Icons.Outlined.VerifiedUser, "Only what's yours to save", "Only save content you own, that is public domain or openly licensed, or that you have permission to save."),
+    Term(Icons.Outlined.Public, "Copyright and local law", "Follow copyright law, the terms of the sites you use, and the laws where you live. They differ by country."),
+    Term(Icons.Outlined.Block, "No bypassing", "Don't use ClipSave to bypass DRM, paywalls or access controls, or to share other people's work without permission."),
+    Term(Icons.Outlined.Info, "No warranty", "ClipSave is free software provided \"as is\", without warranty. The developers are not liable for how it is used, to the extent the law allows."),
+    Term(Icons.Outlined.LinkOff, "Not affiliated", "ClipSave is not affiliated with Instagram, Facebook, YouTube, TikTok, X or any other service."),
 )
 
-/** The terms a user accepts on first launch; shown on Welcome and under Settings › Other › Terms. */
+/** The terms a user accepts on first launch, as a plain list; shown in the Welcome dialog. */
 @Composable
 fun TermsBody() {
     val c = LocalClipColors.current
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        TERMS.forEach { line ->
+        TERMS.forEach { term ->
             Row {
                 Text("•", style = ClipType.BodyStrong, color = c.primary, modifier = Modifier.width(16.dp))
-                Text(line, style = ClipType.BodyStrong, color = c.ink)
+                Text(term.body, style = ClipType.BodyStrong, color = c.ink)
             }
         }
     }
 }
 
+/** Settings › Other › Terms: the same points as cards with a heading each, then the full text on the website. */
 @Composable
 fun TermsScreen(onBack: () -> Unit) {
+    val c = LocalClipColors.current
     val uri = LocalUriHandler.current
+    var shown by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { shown = true }
+
     PageScaffold("Terms", onBack) {
-        TermsBody()
-        Spacer(Modifier.height(8.dp))
-        GlassButton("Full terms", { uri.openUri("$REPO_URL/blob/main/TERMS.md") }, Modifier.fillMaxWidth(), height = 48.dp)
-        GlassButton("Source code & license", { uri.openUri(REPO_URL) }, Modifier.fillMaxWidth(), height = 48.dp)
+        Text(
+            "The short version. By using ClipSave you agree to these.",
+            style = ClipType.BodyStrong, color = c.inkMuted,
+            modifier = Modifier.padding(horizontal = 4.dp).reveal(0, shown),
+        )
+        Column(Modifier.fillMaxWidth().panel(RoundedCornerShape(Radius.Lg)).padding(horizontal = 18.dp, vertical = 6.dp)) {
+            TERMS.forEachIndexed { i, term ->
+                if (i > 0) HorizontalDivider(color = c.line)
+                TermRow(term, Modifier.reveal(i + 1, shown))
+            }
+        }
+        Spacer(Modifier.height(4.dp))
+        PrimaryButton(
+            "Read the full terms", { uri.openUri("$SITE_URL/terms") },
+            Modifier.fillMaxWidth().reveal(TERMS.size + 1, shown), icon = Icons.Outlined.OpenInNew,
+        )
+        GlassButton(
+            "Source code & license", { uri.openUri("$SITE_URL/license") },
+            Modifier.fillMaxWidth().reveal(TERMS.size + 2, shown), height = 48.dp,
+        )
+    }
+}
+
+@Composable
+private fun TermRow(term: Term, modifier: Modifier = Modifier) {
+    val c = LocalClipColors.current
+    Row(modifier.fillMaxWidth().padding(vertical = 16.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+        Box(Modifier.size(36.dp).clip(CircleShape).background(c.primarySoft), contentAlignment = Alignment.Center) {
+            Icon(term.icon, null, tint = c.onPrimarySoft, modifier = Modifier.size(20.dp))
+        }
+        Column(Modifier.weight(1f)) {
+            Text(term.title, style = ClipType.Headline, color = c.ink)
+            Spacer(Modifier.height(2.dp))
+            Text(term.body, style = ClipType.BodyStrong, color = c.inkMuted)
+        }
     }
 }
 

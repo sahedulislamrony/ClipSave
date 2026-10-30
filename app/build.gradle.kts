@@ -23,8 +23,8 @@ android {
         // 29+ => scoped storage only (MediaStore), no legacy storage permissions.
         minSdk = 29
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.3.1"
+        versionCode = 6
+        versionName = "1.3.2"
     }
 
     // yt-dlp's embedded Python + ffmpeg are big, so build one APK per ABI (~70 MB each) plus a

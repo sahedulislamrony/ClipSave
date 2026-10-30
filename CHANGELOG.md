@@ -6,6 +6,13 @@ All notable changes to ClipSave are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-10-30
+
+### Changed
+- **Terms** is redesigned: each point is a card with an icon and a heading. **Read the full terms** and
+  **Source code & license** now open [clipsave.link](https://clipsave.link/terms) instead of GitHub.
+- **How it works** has a **See details on the web** button that opens the walkthrough on the website.
+
 ## [1.3.1] - 2026-10-30
 
 ### Changed
@@ -81,7 +88,8 @@ First public release.
 - Terms of Use and disclaimer (`TERMS.md`), agreed on first launch and readable under Settings → Other → Terms.
 - Signed per-ABI release APKs, `build.sh`, and a GitHub Actions release workflow.
 
-[Unreleased]: https://github.com/sahedulislamrony/ClipSave/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/sahedulislamrony/ClipSave/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.2
 [1.3.1]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.1
 [1.3.0]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.0
 [1.2.0]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.2.0
