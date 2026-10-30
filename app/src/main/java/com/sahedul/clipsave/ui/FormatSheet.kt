@@ -56,8 +56,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sahedul.clipsave.core.FormatOption
+import com.sahedul.clipsave.core.LinkPreview
 import com.sahedul.clipsave.core.MediaInfo
 import com.sahedul.clipsave.core.Numbering
+import com.sahedul.clipsave.core.Platform
 import com.sahedul.clipsave.core.PlaylistEntry
 import com.sahedul.clipsave.core.PlaylistInfo
 import androidx.compose.foundation.lazy.LazyColumn
@@ -124,7 +126,8 @@ fun ExtractSheet(
                 Box(Modifier.align(Alignment.CenterHorizontally).size(width = 36.dp, height = 5.dp).clip(CircleShape).background(c.inkFaint.copy(alpha = 0.5f)))
                 Spacer(Modifier.height(12.dp))
                 when (val s = state) {
-                    is ExtractState.Loading, ExtractState.Idle, is ExtractState.Started -> LoadingBody()
+                    is ExtractState.Loading -> LoadingBody(s.preview, Platform.detect(s.url))
+                    ExtractState.Idle, is ExtractState.Started -> LoadingBody()
                     is ExtractState.Ready -> ReadyBody(s.info, onClose = onDismiss, onPick = { option, name -> vm.download(s.info, option, name) })
                     is ExtractState.PlaylistReady -> PlaylistBody(
                         s,
@@ -146,10 +149,33 @@ fun ExtractSheet(
     }
 }
 
+/** Spinner; once anything is known about the link, its thumbnail and title above it, laid out like [ReadyBody]'s header. */
 @Composable
-private fun LoadingBody() {
-    Box(Modifier.fillMaxWidth().height(160.dp), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(color = LocalClipColors.current.primary, trackColor = Color.Transparent)
+private fun LoadingBody(preview: LinkPreview? = null, platform: Platform? = null) {
+    val c = LocalClipColors.current
+    if (preview == null) {
+        Box(Modifier.fillMaxWidth().height(160.dp), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = c.primary, trackColor = Color.Transparent)
+        }
+        return
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Thumb(preview.thumbnail, Modifier.size(52.dp).clip(RoundedCornerShape(14.dp)))
+        Column(Modifier.weight(1f).padding(start = 12.dp)) {
+            Text(preview.title ?: "Reading link…", style = ClipType.Headline, color = c.ink, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(
+                listOfNotNull(platform?.label, preview.uploader).joinToString(" · "),
+                style = ClipType.Caption,
+                color = c.inkMuted,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+    Row(Modifier.fillMaxWidth().height(108.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+        CircularProgressIndicator(Modifier.size(22.dp), color = c.primary, trackColor = Color.Transparent, strokeWidth = 2.5.dp)
+        Spacer(Modifier.width(12.dp))
+        Text("Finding qualities…", style = ClipType.BodyStrong, color = c.inkMuted)
     }
 }
 

@@ -22,5 +22,5 @@ class AppContainer(app: Application) {
     val extractor = Extractor(engine, cookies, File(app.cacheDir, "yt-dlp"))
     val downloads = DownloadRepository(app)
     val scheduler = DownloadScheduler(app, downloads, prefs)
-    val updater = AppUpdater(app, scope)
+    val updater = AppUpdater(app, scope, prefs)
 }

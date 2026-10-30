@@ -1,5 +1,6 @@
 package com.sahedul.clipsave.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,14 +27,16 @@ import com.sahedul.clipsave.BuildConfig
 import com.sahedul.clipsave.core.UpdateState
 import com.sahedul.clipsave.ui.theme.AppMark
 import com.sahedul.clipsave.ui.theme.ClipType
+import com.sahedul.clipsave.ui.theme.GlassButton
 import com.sahedul.clipsave.ui.theme.LocalClipColors
 import com.sahedul.clipsave.ui.theme.PrimaryButton
 import com.sahedul.clipsave.ui.theme.clipBackground
 
-/** Blocks the app until the pending release is installed. There's deliberately no "later". */
+/** Offers the pending release: update now, or put it off and keep using the app (Back does the same). */
 @Composable
-fun UpdateScreen(state: UpdateState.Pending, onUpdate: () -> Unit) {
+fun UpdateScreen(state: UpdateState.Pending, onUpdate: () -> Unit, onLater: () -> Unit) {
     val c = LocalClipColors.current
+    BackHandler(enabled = state is UpdateState.Available, onBack = onLater)
     val sizeMb = state.release.asset.size / (1024 * 1024)
     Box(Modifier.fillMaxSize().clipBackground()) {
         Column(
@@ -47,10 +50,10 @@ fun UpdateScreen(state: UpdateState.Pending, onUpdate: () -> Unit) {
             ) {
                 AppMark(size = 88.dp)
                 Spacer(Modifier.height(24.dp))
-                Text("Update required", style = ClipType.Title, color = c.ink, textAlign = TextAlign.Center)
+                Text("Update available", style = ClipType.Title, color = c.ink, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "ClipSave ${state.release.version} is out. Update from v${BuildConfig.VERSION_NAME} to keep using the app.",
+                    "ClipSave ${state.release.version} is out. You're on v${BuildConfig.VERSION_NAME}.",
                     style = ClipType.BodyStrong,
                     color = c.inkMuted,
                     textAlign = TextAlign.Center,
@@ -85,6 +88,13 @@ fun UpdateScreen(state: UpdateState.Pending, onUpdate: () -> Unit) {
                         onClick = onUpdate,
                         icon = Icons.Rounded.Download,
                         modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    GlassButton(
+                        text = "Update later",
+                        onClick = onLater,
+                        modifier = Modifier.fillMaxWidth(),
+                        height = 56.dp,
                     )
                 }
             }

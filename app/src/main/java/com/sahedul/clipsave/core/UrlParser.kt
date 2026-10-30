@@ -48,6 +48,20 @@ object UrlParser {
         return id?.let { "https://www.youtube.com/watch?v=$it" }
     }
 
+    /** The 11-character id in `watch?v=…`, `youtu.be/…`, `/shorts/…`, `/live/…` or `/embed/…` links; null otherwise. */
+    fun youtubeVideoId(url: String): String? {
+        if (Platform.detect(url) != Platform.YOUTUBE) return null
+        val path = runCatching { URI(url).path }.getOrNull().orEmpty().trim('/').split('/')
+        val id = queryParam(url, "v") ?: when {
+            hostOf(url) == "youtu.be" -> path.firstOrNull()
+            path.size >= 2 && path[0] in setOf("shorts", "live", "embed", "v") -> path[1]
+            else -> null
+        }
+        return id?.takeIf { videoId.matches(it) }
+    }
+
+    private val videoId = Regex("[A-Za-z0-9_-]{11}")
+
     private fun queryParam(url: String, name: String): String? =
         runCatching { URI(url).rawQuery }.getOrNull()?.split('&')?.firstNotNullOfOrNull { pair ->
             pair.split('=', limit = 2).takeIf { it.size == 2 && it[0] == name && it[1].isNotBlank() }?.get(1)

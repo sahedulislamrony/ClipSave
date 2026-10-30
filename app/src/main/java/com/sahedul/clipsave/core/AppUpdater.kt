@@ -30,7 +30,10 @@ sealed interface UpdateState {
     /** Couldn't reach GitHub; the app stays usable. */
     data class CheckFailed(val message: String) : UpdateState
 
-    /** Everything below means a newer release exists, and the update screen is shown until it's installed. */
+    /** A newer release the user put off with "Update later"; the app carries on as normal. */
+    data class Postponed(val release: Release) : UpdateState
+
+    /** Everything below means a newer release is on offer and the update screen is showing. */
     sealed interface Pending : UpdateState { val release: Release }
     data class Available(override val release: Release, val error: String? = null) : Pending
     data class Downloading(override val release: Release, val progress: Float) : Pending
@@ -44,7 +47,7 @@ data class Release(val version: String, val asset: GithubRelease.Asset)
  * universal one); we download the same kind that's installed, so a phone on the 60 MB arm64 build
  * never pulls the 200 MB universal one. Android only accepts it if it's signed with the same key.
  */
-class AppUpdater(private val app: Application, private val scope: CoroutineScope) {
+class AppUpdater(private val app: Application, private val scope: CoroutineScope, private val prefs: Prefs) {
     private val _state = MutableStateFlow<UpdateState>(UpdateState.Idle)
     val state: StateFlow<UpdateState> = _state
     private val busy = Mutex()
@@ -60,8 +63,11 @@ class AppUpdater(private val app: Application, private val scope: CoroutineScope
         }.getOrDefault(AppRelease.UNIVERSAL)
     }
 
-    /** Looks for a newer release. Ignored while a check, download or install is already underway. */
-    fun check() {
+    /**
+     * Looks for a newer release. Ignored while a check, download or install is already underway.
+     * A [manual] check (Settings) offers a version even if the user put it off before.
+     */
+    fun check(manual: Boolean = false) {
         if (_state.value is UpdateState.Downloading || _state.value is UpdateState.Installing) return
         if (!busy.tryLock()) return
         val before = _state.value
@@ -75,16 +81,25 @@ class AppUpdater(private val app: Application, private val scope: CoroutineScope
                     asset == null -> UpdateState.CheckFailed("No $installedVariant APK in ${latest.tag}")
                     // Keep any error message from a cancelled install of the same version.
                     before is UpdateState.Available && before.release.version == latest.version -> before
+                    !AppRelease.shouldPrompt(latest.version, prefs.dismissedUpdate, manual) ->
+                        UpdateState.Postponed(Release(latest.version, asset))
                     else -> UpdateState.Available(Release(latest.version, asset))
                 }
             } catch (e: Throwable) {
                 Log.w(TAG, "Update check failed", e)
-                // A pending update stays pending: being offline must not let the user skip it.
+                // Going offline doesn't take away an update screen that's already showing.
                 if (before !is UpdateState.Pending) _state.value = UpdateState.CheckFailed(e.message ?: "Network error")
             } finally {
                 busy.unlock()
             }
         }
+    }
+
+    /** "Update later": closes the update screen, and the start-up check stops offering this version. */
+    fun postpone() {
+        val pending = _state.value as? UpdateState.Available ?: return
+        prefs.dismissedUpdate = pending.release.version
+        _state.value = UpdateState.Postponed(pending.release)
     }
 
     /** Downloads the pending release's APK (reusing a finished download) and hands it to the system installer. */

@@ -6,6 +6,16 @@ All notable changes to ClipSave are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-30
+
+### Changed
+- App updates are optional: the update screen now has **Update later** next to **Update now**, and Back does the
+  same. A version you put off isn't offered again when the app opens (a newer release is), while **Settings →
+  Check for updates** always offers it.
+- Sharing a single video shows its thumbnail, title and channel within moments (YouTube, Vimeo, TikTok,
+  Dailymotion) while the qualities are still being read, instead of a bare spinner.
+- Reading a YouTube video's qualities skips the HLS manifest, one fewer request and about 20% faster.
+
 ## [1.2.0] - 2026-10-29
 
 ### Changed
@@ -63,7 +73,8 @@ First public release.
 - Terms of Use and disclaimer (`TERMS.md`), agreed on first launch and readable under Settings → Other → Terms.
 - Signed per-ABI release APKs, `build.sh`, and a GitHub Actions release workflow.
 
-[Unreleased]: https://github.com/sahedulislamrony/ClipSave/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/sahedulislamrony/ClipSave/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.0
 [1.2.0]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.2.0
 [1.1.0]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.1.0
 [1.0.0]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.0.0

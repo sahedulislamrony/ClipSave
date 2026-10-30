@@ -43,7 +43,7 @@ for audio), or to a folder you choose. Powered by [yt-dlp](https://github.com/yt
   </tr>
   <tr>
     <td align="center"><img src="docs/screens/welcome.jpg" width="200" alt="First-launch welcome screen"><br><sub>Welcome</sub></td>
-    <td align="center"><img src="docs/screens/update.jpg" width="200" alt="Update required screen with download button"><br><sub>In-app update</sub></td>
+    <td align="center"><img src="docs/screens/update.jpg" width="200" alt="Update available screen with Update now and Update later buttons"><br><sub>In-app update</sub></td>
     <td align="center"><img src="docs/screens/home-dark.jpg" width="200" alt="Home screen in dark theme"><br><sub>Dark theme</sub></td>
     <td align="center"><img src="docs/screens/downloads-dark.jpg" width="200" alt="Downloads tab in dark theme"><br><sub>Dark theme</sub></td>
   </tr>
@@ -65,7 +65,8 @@ for audio), or to a folder you choose. Powered by [yt-dlp](https://github.com/yt
 * **Background downloads** — foreground service with a progress notification; tap it to open Downloads, where
   you pause or cancel. Survives leaving the app.
 * **In-app updates** — checks GitHub Releases each time the app opens (or **Settings → Check for updates**) and
-  installs the same APK variant you have (arm64-v8a, armeabi-v7a, x86_64 or universal).
+  installs the same APK variant you have (arm64-v8a, armeabi-v7a, x86_64 or universal). **Update later** puts a
+  version off until the next release.
 * **Pause / resume** — per download, per playlist, or **Pause all / Resume all**; partial files are kept, so
   resuming continues where it stopped. Failed or canceled items can be retried.
 * **Your folder** — save to the default folder or pick any folder with the system picker; no storage permission.

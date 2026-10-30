@@ -72,4 +72,21 @@ class UrlParserTest {
         assertEquals("example.com", hostOf("https://WWW.Example.COM/Path"))
         assertNull(hostOf("not a url"))
     }
+
+    @Test fun `youtube video id from every link shape`() {
+        val id = "dQw4w9WgXcQ"
+        assertEquals(id, UrlParser.youtubeVideoId("https://www.youtube.com/watch?v=$id&t=42"))
+        assertEquals(id, UrlParser.youtubeVideoId("https://m.youtube.com/watch?feature=share&v=$id"))
+        assertEquals(id, UrlParser.youtubeVideoId("https://youtu.be/$id?si=abc"))
+        assertEquals(id, UrlParser.youtubeVideoId("https://youtube.com/shorts/$id"))
+        assertEquals(id, UrlParser.youtubeVideoId("https://www.youtube.com/live/$id?feature=shared"))
+        assertEquals(id, UrlParser.youtubeVideoId("https://www.youtube-nocookie.com/embed/$id"))
+    }
+
+    @Test fun `no youtube video id for channels, playlists, bad ids or other sites`() {
+        assertNull(UrlParser.youtubeVideoId("https://www.youtube.com/@channel"))
+        assertNull(UrlParser.youtubeVideoId("https://www.youtube.com/playlist?list=PL123"))
+        assertNull(UrlParser.youtubeVideoId("https://youtu.be/short"))
+        assertNull(UrlParser.youtubeVideoId("https://vimeo.com/watch?v=dQw4w9WgXcQ"))
+    }
 }

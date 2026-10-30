@@ -46,6 +46,11 @@ class Prefs(context: Context) {
         get() = sp.getLong("last_update", 0L)
         set(v) = sp.edit { putLong("last_update", v) }
 
+    /** App release the user put off with "Update later"; the start-up check won't offer it again. */
+    var dismissedUpdate: String?
+        get() = sp.getString("dismissed_update", null)
+        set(v) = sp.edit { if (v == null) remove("dismissed_update") else putString("dismissed_update", v) }
+
     companion object {
         const val THEME_LIGHT = "light"
         const val THEME_DARK = "dark"

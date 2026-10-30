@@ -11,6 +11,15 @@ data class MediaInfo(
     val options: List<FormatOption>,
 )
 
+/** What the sheet shows while [MediaInfo] is still being read. Any field may be missing. */
+data class LinkPreview(val title: String?, val uploader: String?, val thumbnail: String?) {
+    companion object {
+        /** Known from the link alone, before any request: a YouTube video's thumbnail. */
+        fun instant(url: String): LinkPreview? =
+            UrlParser.youtubeVideoId(url)?.let { LinkPreview(null, null, "https://i.ytimg.com/vi/$it/mqdefault.jpg") }
+    }
+}
+
 /**
  * A YouTube playlist, read with `--flat-playlist` (titles and links only, no per-video formats).
  * Read [PAGE_SIZE] videos at a time: long playlists (and endless Mixes) would otherwise take minutes.

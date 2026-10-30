@@ -59,4 +59,21 @@ class AppReleaseTest {
         assertEquals("ClipSave-1.2.0-universal.apk", AppRelease.assetFor(release("universal"), "x86_64")?.name)
         assertNull(AppRelease.assetFor(release("arm64-v8a"), "x86_64"))
     }
+
+    @Test fun `start-up check prompts until a version is put off`() {
+        assertTrue(AppRelease.shouldPrompt("1.3.0", dismissed = null, manual = false))
+        assertFalse(AppRelease.shouldPrompt("1.3.0", dismissed = "1.3.0", manual = false))
+        assertFalse(AppRelease.shouldPrompt("v1.3.0", dismissed = "1.3.0", manual = false))
+    }
+
+    @Test fun `start-up check prompts again for a different release`() {
+        assertTrue(AppRelease.shouldPrompt("1.4.0", dismissed = "1.3.0", manual = false))
+        assertTrue(AppRelease.shouldPrompt("1.3.1", dismissed = "1.3.0", manual = false))
+        assertTrue(AppRelease.shouldPrompt("1.3.0", dismissed = "1.3.0-beta", manual = false))
+    }
+
+    @Test fun `manual check always prompts`() {
+        assertTrue(AppRelease.shouldPrompt("1.3.0", dismissed = "1.3.0", manual = true))
+        assertTrue(AppRelease.shouldPrompt("1.3.0", dismissed = null, manual = true))
+    }
 }
