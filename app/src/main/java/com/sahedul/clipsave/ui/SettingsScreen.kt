@@ -286,8 +286,8 @@ private fun releaseFolder(context: Context, tree: String?) {
     }
 }
 
-/** Where bug reports and feature requests go. */
-private const val SITE_URL = "https://clipsave.link"
+/** The ClipSave website: bug reports, feature requests, and the long-form pages the app links to. */
+internal const val SITE_URL = "https://clipsave.link"
 
 /** Opens a page of the ClipSave website in the browser. */
 private fun openSite(context: Context, path: String) {

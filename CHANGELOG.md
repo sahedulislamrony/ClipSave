@@ -6,6 +6,11 @@ All notable changes to ClipSave are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- **Terms** is redesigned: each point is a card with an icon and a heading. **Read the full terms** and
+  **Source code & license** now open [clipsave.link](https://clipsave.link/terms) instead of GitHub.
+- **How it works** has a **See details on the web** button that opens the walkthrough on the website.
+
 ## [1.3.1] - 2026-10-30
 
 ### Changed
