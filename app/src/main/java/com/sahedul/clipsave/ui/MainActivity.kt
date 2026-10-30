@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
                 val update by container.updater.state.collectAsStateWithLifecycle()
 
                 (update as? UpdateState.Pending)?.let {
-                    UpdateScreen(it, onUpdate = container.updater::install)
+                    UpdateScreen(it, onUpdate = container.updater::install, onLater = container.updater::postpone)
                     return@ClipSaveTheme
                 }
 
@@ -121,7 +121,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        // Every time the app comes to the front; a newer release takes over the screen until installed.
+        // Every time the app comes to the front; a newer release is offered unless the user put that version off.
         // Debug builds are signed with the debug key and can't install a release over themselves.
         if (!BuildConfig.DEBUG) (application as ClipSaveApp).container.updater.check()
     }

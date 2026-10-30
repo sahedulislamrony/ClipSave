@@ -243,13 +243,14 @@ fun SettingsScreen(container: AppContainer, insets: PaddingValues, onOpenPage: (
                         checking -> "Checking…"
                         appUpdate is UpdateState.CheckFailed -> "Retry"
                         appUpdate is UpdateState.UpToDate -> "Up to date"
+                        appUpdate is UpdateState.Postponed -> "Update"
                         else -> "Check"
                     },
                     enabled = !checking,
                     onClick = {
-                        // A newer app release takes over the screen (MainActivity); otherwise this also
-                        // refreshes yt-dlp so site extractors stay current.
-                        container.updater.check()
+                        // A newer app release opens the update screen (MainActivity), even one put off
+                        // before; this also refreshes yt-dlp so site extractors stay current.
+                        container.updater.check(manual = true)
                         if (engine is EngineState.Ready) {
                             engineUpdating = true
                             scope.launch {

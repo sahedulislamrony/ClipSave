@@ -41,6 +41,13 @@ object AppRelease {
     /** True when [latest] is a newer version than [current] (semver; a pre-release sorts before its release). */
     fun isNewer(latest: String, current: String): Boolean = compare(latest, current) > 0
 
+    /**
+     * Whether a check that found [latest] should show the update screen. A manual check always does;
+     * the start-up check skips the one version the user put off with "Update later" ([dismissed]).
+     */
+    fun shouldPrompt(latest: String, dismissed: String?, manual: Boolean): Boolean =
+        manual || dismissed == null || compare(latest, dismissed) != 0
+
     fun compare(a: String, b: String): Int {
         val (coreA, preA) = split(a)
         val (coreB, preB) = split(b)

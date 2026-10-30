@@ -7,6 +7,9 @@ All notable changes to ClipSave are documented here. The format follows
 ## [Unreleased]
 
 ### Changed
+- App updates are optional: the update screen now has **Update later** next to **Update now**, and Back does the
+  same. A version you put off isn't offered again when the app opens (a newer release is), while **Settings →
+  Check for updates** always offers it.
 - Sharing a single video shows its thumbnail, title and channel within moments (YouTube, Vimeo, TikTok,
   Dailymotion) while the qualities are still being read, instead of a bare spinner.
 - Reading a YouTube video's qualities skips the HLS manifest, one fewer request and about 20% faster.
