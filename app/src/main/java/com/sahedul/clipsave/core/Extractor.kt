@@ -13,6 +13,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import java.io.File
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
@@ -84,31 +85,56 @@ class Extractor(private val engine: Engine, private val cookies: CookieStore, pr
     }
 
     /**
-     * Title, channel and thumbnail from the site's oEmbed endpoint: one small request, a few hundred ms,
-     * while yt-dlp takes seconds. Only for showing something while [fetch] runs; null when the site has
-     * no public oEmbed or the request fails.
+     * Title, channel and thumbnail from one small request (a few hundred ms) while yt-dlp takes seconds: the
+     * site's oEmbed endpoint, or for Instagram and Facebook, which have no public one, their embed page.
+     * Only for showing something while [fetch] runs; null when there's nothing to read or the request fails.
      */
     suspend fun preview(url: String): LinkPreview? = withContext(Dispatchers.IO) {
-        val endpoint = when (Platform.detect(url)) {
-            Platform.YOUTUBE -> "https://www.youtube.com/oembed?format=json&url="
-            Platform.VIMEO -> "https://vimeo.com/api/oembed.json?url="
-            Platform.TIKTOK -> "https://www.tiktok.com/oembed?url="
-            Platform.DAILYMOTION -> "https://www.dailymotion.com/services/oembed?format=json&url="
-            else -> return@withContext null
-        }
-        val json = runCatching {
-            val conn = URL(endpoint + URLEncoder.encode(url, "UTF-8")).openConnection() as HttpURLConnection
-            try {
-                conn.connectTimeout = 5_000
-                conn.readTimeout = 5_000
-                if (conn.responseCode != 200) return@runCatching null
-                Json.parseToJsonElement(conn.inputStream.bufferedReader().use { it.readText() }).jsonObject
-            } finally {
-                conn.disconnect()
+        runCatching {
+            when (val platform = Platform.detect(url)) {
+                Platform.INSTAGRAM -> UrlParser.instagramShortcode(url)?.let {
+                    EmbedPage.instagram(get("https://www.instagram.com/p/$it/embed/captioned/", EmbedPage.READ_CHARS))
+                }
+                Platform.FACEBOOK ->
+                    EmbedPage.facebook(get("https://www.facebook.com/plugins/video.php?href=" + encode(url), EmbedPage.READ_CHARS))
+                else -> oEmbed[platform]?.let { endpoint ->
+                    val json = Json.parseToJsonElement(get(endpoint + encode(url))).jsonObject
+                    LinkPreview(json.str("title")?.takeIf { it.isNotBlank() }, json.str("author_name"), json.str("thumbnail_url"))
+                        .takeIf { it.title != null || it.thumbnail != null }
+                }
             }
-        }.getOrNull() ?: return@withContext null
-        LinkPreview(json.str("title")?.takeIf { it.isNotBlank() }, json.str("author_name"), json.str("thumbnail_url"))
-            .takeIf { it.title != null || it.thumbnail != null }
+        }.getOrNull()
+    }
+
+    private val oEmbed = mapOf(
+        Platform.YOUTUBE to "https://www.youtube.com/oembed?format=json&url=",
+        Platform.VIMEO to "https://vimeo.com/api/oembed.json?url=",
+        Platform.TIKTOK to "https://www.tiktok.com/oembed?url=",
+        Platform.DAILYMOTION to "https://www.dailymotion.com/services/oembed?format=json&url=",
+    )
+
+    private fun encode(url: String): String = URLEncoder.encode(url, "UTF-8")
+
+    /** The body of a 200 response, at most [limit] chars of it; throws otherwise. */
+    private fun get(url: String, limit: Int = Int.MAX_VALUE): String {
+        val conn = URL(url).openConnection() as HttpURLConnection
+        try {
+            conn.connectTimeout = 5_000
+            conn.readTimeout = 5_000
+            if (conn.responseCode != 200) throw IOException("HTTP ${conn.responseCode} for $url")
+            return conn.inputStream.bufferedReader().use { r ->
+                val out = StringBuilder()
+                val buf = CharArray(8 * 1024)
+                while (out.length < limit) {
+                    val n = r.read(buf)
+                    if (n < 0) break
+                    out.appendRange(buf, 0, n)
+                }
+                out.toString()
+            }
+        } finally {
+            conn.disconnect()
+        }
     }
 
     /**

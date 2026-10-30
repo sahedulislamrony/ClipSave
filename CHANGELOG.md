@@ -6,6 +6,10 @@ All notable changes to ClipSave are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- Instagram and Facebook links now get the same quick preview while their qualities load: the post's
+  thumbnail and account (plus the caption's first line on Instagram), read from the sites' public embed pages.
+
 ## [1.3.0] - 2026-10-30
 
 ### Changed

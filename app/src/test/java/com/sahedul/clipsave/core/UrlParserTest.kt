@@ -83,6 +83,21 @@ class UrlParserTest {
         assertEquals(id, UrlParser.youtubeVideoId("https://www.youtube-nocookie.com/embed/$id"))
     }
 
+    @Test fun `instagram post code from post, reel and tv links`() {
+        assertEquals("Chunk8-jurw", UrlParser.instagramShortcode("https://www.instagram.com/reel/Chunk8-jurw/?igsh=abc"))
+        assertEquals("Cop84x6u7CP", UrlParser.instagramShortcode("https://www.instagram.com/reels/Cop84x6u7CP/"))
+        assertEquals("BQ0eAlwhDrw", UrlParser.instagramShortcode("https://instagram.com/p/BQ0eAlwhDrw"))
+        assertEquals("BkfuX9UB-eK", UrlParser.instagramShortcode("https://www.instagram.com/tv/BkfuX9UB-eK/"))
+        assertEquals("CWqAgUZgCku", UrlParser.instagramShortcode("https://www.instagram.com/marvelskies.fc/reel/CWqAgUZgCku/"))
+    }
+
+    @Test fun `no instagram post code for stories, profiles, share links or other sites`() {
+        assertNull(UrlParser.instagramShortcode("https://www.instagram.com/stories/someone/3570766765028588805/"))
+        assertNull(UrlParser.instagramShortcode("https://www.instagram.com/porsche/"))
+        assertNull(UrlParser.instagramShortcode("https://www.instagram.com/share/reel/BAabc123xyz"))
+        assertNull(UrlParser.instagramShortcode("https://www.facebook.com/reel/1234567890"))
+    }
+
     @Test fun `no youtube video id for channels, playlists, bad ids or other sites`() {
         assertNull(UrlParser.youtubeVideoId("https://www.youtube.com/@channel"))
         assertNull(UrlParser.youtubeVideoId("https://www.youtube.com/playlist?list=PL123"))
