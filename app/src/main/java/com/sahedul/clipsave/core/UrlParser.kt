@@ -62,6 +62,20 @@ object UrlParser {
 
     private val videoId = Regex("[A-Za-z0-9_-]{11}")
 
+    /**
+     * The post code in `instagram.com/p/…`, `/reel/…`, `/reels/…` or `/tv/…` (also under `/<user>/`). Null for
+     * stories, profiles and `/share/…` links, whose code isn't the post's.
+     */
+    fun instagramShortcode(url: String): String? {
+        if (Platform.detect(url) != Platform.INSTAGRAM) return null
+        val path = runCatching { URI(url).path }.getOrNull().orEmpty().trim('/').split('/')
+        if (path.firstOrNull() == "share") return null
+        val i = path.indexOfFirst { it in setOf("p", "reel", "reels", "tv") }
+        return path.getOrNull(i + 1)?.takeIf { i >= 0 && shortcode.matches(it) }
+    }
+
+    private val shortcode = Regex("[A-Za-z0-9_-]{5,}")
+
     private fun queryParam(url: String, name: String): String? =
         runCatching { URI(url).rawQuery }.getOrNull()?.split('&')?.firstNotNullOfOrNull { pair ->
             pair.split('=', limit = 2).takeIf { it.size == 2 && it[0] == name && it[1].isNotBlank() }?.get(1)

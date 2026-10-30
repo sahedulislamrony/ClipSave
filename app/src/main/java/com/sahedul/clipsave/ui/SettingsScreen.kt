@@ -266,11 +266,11 @@ fun SettingsScreen(container: AppContainer, insets: PaddingValues, onOpenPage: (
             Divider()
             SettingRow(icon = Icons.Outlined.Gavel, title = "Terms", onClick = { onOpenPage(MainActivity.PAGE_TERMS) }) { Value(null) }
             Divider()
-            SettingRow(icon = Icons.Outlined.BugReport, title = "Report a bug", onClick = { sendFeedback(context, "Bug report") }) { Value(null) }
+            SettingRow(icon = Icons.Outlined.BugReport, title = "Report a bug", onClick = { openSite(context, "report-bug") }) { Value(null) }
             Divider()
-            SettingRow(icon = Icons.Outlined.Lightbulb, title = "Request a feature", onClick = { sendFeedback(context, "Feature request") }) { Value(null) }
+            SettingRow(icon = Icons.Outlined.Lightbulb, title = "Request a feature", onClick = { openSite(context, "request-feature") }) { Value(null) }
             Divider()
-            SettingRow(icon = Icons.Outlined.Person, title = "Developer", onClick = { onOpenPage(MainActivity.PAGE_DEVELOPER) }) { Value(null) }
+            SettingRow(icon = Icons.Outlined.Person, title = "Developer", onClick = { openSite(context, "about") }) { Value(null) }
         }
     }
 }
@@ -287,19 +287,14 @@ private fun releaseFolder(context: Context, tree: String?) {
 }
 
 /** Where bug reports and feature requests go. */
-private const val FEEDBACK_EMAIL = "sahedul.dev@gmail.com"
+private const val SITE_URL = "https://clipsave.link"
 
-/** Opens the mail app with the app/device details filled in; no extra permissions or network code. */
-private fun sendFeedback(context: Context, kind: String) {
-    val body = "\n\n—\nClipSave ${BuildConfig.VERSION_NAME} · Android ${Build.VERSION.RELEASE} · ${Build.MANUFACTURER} ${Build.MODEL}"
-    val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"))
-        .putExtra(Intent.EXTRA_EMAIL, arrayOf(FEEDBACK_EMAIL).filter { it.isNotBlank() }.toTypedArray())
-        .putExtra(Intent.EXTRA_SUBJECT, "ClipSave: $kind")
-        .putExtra(Intent.EXTRA_TEXT, body)
+/** Opens a page of the ClipSave website in the browser. */
+private fun openSite(context: Context, path: String) {
     try {
-        context.startActivity(intent)
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("$SITE_URL/$path")))
     } catch (e: ActivityNotFoundException) {
-        Toast.makeText(context, "No email app", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "No browser app", Toast.LENGTH_SHORT).show()
     }
 }
 
