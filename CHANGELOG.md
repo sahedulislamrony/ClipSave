@@ -9,6 +9,8 @@ All notable changes to ClipSave are documented here. The format follows
 ### Changed
 - Instagram and Facebook links now get the same quick preview while their qualities load: the post's
   thumbnail and account (plus the caption's first line on Instagram), read from the sites' public embed pages.
+- The website moved to [clipsave.link](https://clipsave.link): **Report a bug**, **Request a feature** and
+  **Developer** in Settings open pages there.
 
 ## [1.3.0] - 2026-10-30
 

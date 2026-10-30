@@ -88,7 +88,6 @@ class MainActivity : ComponentActivity() {
                         PAGE_HOW -> HowItWorksScreen(onBack = { page = null })
                         PAGE_THEME -> ThemeScreen(container.prefs, onBack = { page = null })
                         PAGE_TERMS -> TermsScreen(onBack = { page = null })
-                        PAGE_DEVELOPER -> DeveloperScreen(onBack = { page = null })
                         else -> {
                             // The page (backdrop included) is the blur source the dock frosts over.
                             Box(Modifier.hazeSource(hazeState).clipBackground()) {
@@ -139,6 +138,5 @@ class MainActivity : ComponentActivity() {
         const val PAGE_HOW = "how"
         const val PAGE_THEME = "theme"
         const val PAGE_TERMS = "terms"
-        const val PAGE_DEVELOPER = "developer"
     }
 }

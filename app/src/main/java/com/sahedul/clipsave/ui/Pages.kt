@@ -8,12 +8,6 @@ import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.PauseCircle
-import androidx.compose.material.icons.automirrored.rounded.OpenInNew
-import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.MailOutline
-import androidx.compose.material.icons.outlined.Work
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -245,60 +239,6 @@ fun TermsScreen(onBack: () -> Unit) {
         Spacer(Modifier.height(8.dp))
         GlassButton("Full terms", { uri.openUri("$REPO_URL/blob/main/TERMS.md") }, Modifier.fillMaxWidth(), height = 48.dp)
         GlassButton("Source code & license", { uri.openUri(REPO_URL) }, Modifier.fillMaxWidth(), height = 48.dp)
-    }
-}
-
-private const val DEVELOPER_NAME = "Sahedul Islam Rony"
-private const val DEVELOPER_EMAIL = "sahedul.dev@gmail.com"
-
-private class Contact(val icon: ImageVector, val label: String, val value: String, val uri: String)
-
-private val CONTACTS = listOf(
-    Contact(Icons.Outlined.Code, "GitHub", "github.com/sahedulislamrony", "https://github.com/sahedulislamrony"),
-    Contact(Icons.Outlined.Work, "LinkedIn", "linkedin.com/in/sahedulislamrony", "https://www.linkedin.com/in/sahedulislamrony"),
-    Contact(Icons.Outlined.MailOutline, "Email", DEVELOPER_EMAIL, "mailto:$DEVELOPER_EMAIL"),
-)
-
-/** Who makes ClipSave, and where to reach them. Settings › Other › Developer. */
-@Composable
-fun DeveloperScreen(onBack: () -> Unit) {
-    val c = LocalClipColors.current
-    val uri = LocalUriHandler.current
-    PageScaffold("Developer", onBack) {
-        Column(
-            Modifier.fillMaxWidth().panel(RoundedCornerShape(Radius.Lg)).padding(vertical = 24.dp, horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Box(Modifier.size(72.dp).clip(CircleShape).background(c.primary), contentAlignment = Alignment.Center) {
-                Text(
-                    DEVELOPER_NAME.split(" ").let { it.first().take(1) + it.last().take(1) },
-                    style = ClipType.Title,
-                    color = c.onPrimary,
-                )
-            }
-            Spacer(Modifier.height(12.dp))
-            Text(DEVELOPER_NAME, style = ClipType.Headline, color = c.ink)
-            Text("Made ClipSave", style = ClipType.Caption, color = c.inkMuted)
-        }
-        Column(Modifier.fillMaxWidth().panel(RoundedCornerShape(Radius.Lg))) {
-            CONTACTS.forEachIndexed { i, contact ->
-                if (i > 0) HorizontalDivider(Modifier.padding(start = 60.dp), color = c.line)
-                Row(
-                    Modifier.fillMaxWidth().clickable { runCatching { uri.openUri(contact.uri) } }.padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(Modifier.size(32.dp).clip(CircleShape).background(c.primarySoft), contentAlignment = Alignment.Center) {
-                        Icon(contact.icon, null, tint = c.onPrimarySoft, modifier = Modifier.size(18.dp))
-                    }
-                    Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(contact.label, style = ClipType.BodyStrong, color = c.ink)
-                        Text(contact.value, style = ClipType.Caption, color = c.inkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
-                    Icon(Icons.AutoMirrored.Rounded.OpenInNew, null, tint = c.inkMuted, modifier = Modifier.size(18.dp))
-                }
-            }
-        }
     }
 }
 
