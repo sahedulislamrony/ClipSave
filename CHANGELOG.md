@@ -6,6 +6,16 @@ All notable changes to ClipSave are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.3.4] - 2026-11-07
+
+### Fixed
+- Instagram: the caption shown while a link loads is kept as the file name once the qualities appear, instead
+  of being replaced by `Instagram video` when Instagram gives no usable title without a sign-in.
+
+### Changed
+- A link with no usable title is now named `Video by <username>`, or, when no username is known, the site and
+  the time (`Instagram video 2026-11-07 19.52.03`), so such files no longer share one name.
+
 ## [1.3.3] - 2026-11-07
 
 ### Changed
@@ -103,7 +113,8 @@ First public release.
 - Terms of Use and disclaimer (`TERMS.md`), agreed on first launch and readable under Settings → Other → Terms.
 - Signed per-ABI release APKs, `build.sh`, and a GitHub Actions release workflow.
 
-[Unreleased]: https://github.com/sahedulislamrony/ClipSave/compare/v1.3.3...HEAD
+[Unreleased]: https://github.com/sahedulislamrony/ClipSave/compare/v1.3.4...HEAD
+[1.3.4]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.4
 [1.3.3]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.3
 [1.3.2]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.2
 [1.3.1]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.1

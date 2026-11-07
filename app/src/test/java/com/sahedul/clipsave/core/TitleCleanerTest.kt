@@ -1,7 +1,9 @@
 package com.sahedul.clipsave.core
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TitleCleanerTest {
@@ -14,16 +16,28 @@ class TitleCleanerTest {
         assertEquals("Sunset at the beach", TitleCleaner.name("345 reactions · 12 comments · Sunset at the beach", fb))
     }
 
-    @Test fun `facebook with only counters falls back`() {
-        assertEquals("Facebook video", TitleCleaner.name("12K views · 345 reactions", fb))
-        assertEquals("Facebook video", TitleCleaner.name(null, fb))
-        assertEquals("Facebook video", TitleCleaner.name("", fb))
+    private val stamped = Regex("""^%s video \d{4}-\d{2}-\d{2} \d{2}\.\d{2}\.\d{2}$""")
+
+    @Test fun `facebook with only counters falls back to a timestamped name`() {
+        assertTrue(stamped.pattern.format("Facebook").toRegex().matches(TitleCleaner.name("12K views · 345 reactions", fb)))
+        assertTrue(stamped.pattern.format("Facebook").toRegex().matches(TitleCleaner.name(null, fb)))
+        assertTrue(stamped.pattern.format("Facebook").toRegex().matches(TitleCleaner.name("", fb)))
     }
 
     @Test fun `generic instagram titles fall back`() {
-        assertEquals("Instagram video", TitleCleaner.name("Video by someone", ig))
-        assertEquals("Instagram video", TitleCleaner.name("Instagram", ig))
-        assertEquals("Instagram video", TitleCleaner.name("1234567890", ig))
+        val re = stamped.pattern.format("Instagram").toRegex()
+        assertTrue(re.matches(TitleCleaner.name("Video by someone", ig)))
+        assertTrue(re.matches(TitleCleaner.name("Instagram", ig)))
+        assertTrue(re.matches(TitleCleaner.name("1234567890", ig)))
+    }
+
+    @Test fun `fallback names the uploader when known`() {
+        assertEquals("Video by sabbirahmed58375", TitleCleaner.name("Video by sabbirahmed58375", ig, uploader = "sabbirahmed58375"))
+        assertEquals("Video by someone", TitleCleaner.fallback(ig, " someone "))
+    }
+
+    @Test fun `fallback without an uploader differs by time`() {
+        assertNotEquals(TitleCleaner.fallback(ig, null, 1_000_000_000_000), TitleCleaner.fallback(ig, null, 1_000_000_001_000))
     }
 
     @Test fun `instagram caption wrapper is removed`() {
@@ -48,6 +62,6 @@ class TitleCleanerTest {
 
     @Test fun `other sites fall back to their host`() {
         assertNull(TitleCleaner.clean("Video", Platform.OTHER))
-        assertEquals("example.com video", TitleCleaner.name(null, "https://www.example.com/v/1"))
+        assertTrue(Regex("""^example\.com video \d{4}-.*""").matches(TitleCleaner.name(null, "https://www.example.com/v/1")))
     }
 }
