@@ -39,7 +39,11 @@ class Extractor(private val engine: Engine, private val cookies: CookieStore, pr
         cookies.mergedFileOrNull()?.let { addOption("--cookies", it.absolutePath) }
     }
 
-    suspend fun fetch(url: String): MediaInfo = withContext(Dispatchers.IO) {
+    /**
+     * [preview] is only awaited when yt-dlp's own title is unusable (Instagram without a sign-in reports
+     * "Video by <user>"); the caption and username its embed page gave are then used instead of a bare fallback.
+     */
+    suspend fun fetch(url: String, preview: suspend () -> LinkPreview? = { null }): MediaInfo = withContext(Dispatchers.IO) {
         val started = System.currentTimeMillis()
         // YouTube's quick read leaves out the signed links a download needs, so only other sites keep theirs.
         val infoFile = if (Platform.detect(url) == Platform.YOUTUBE) null else newInfoFile()
@@ -86,13 +90,22 @@ class Extractor(private val engine: Engine, private val cookies: CookieStore, pr
             add(FormatOption.audio("m4a", bestAudioSize))
         }
 
+        val platform = Platform.detect(url)
+        var title = TitleCleaner.clean(info.title, platform)
+        var uploader = info.uploader?.takeIf { it.isNotBlank() }
+        if (title == null) {
+            val hint = runCatching { preview() }.getOrNull()
+            title = hint?.title
+            uploader = uploader ?: hint?.uploader
+        }
+
         MediaInfo(
             url = url,
-            title = TitleCleaner.name(info.title, url),
-            uploader = info.uploader,
+            title = title ?: TitleCleaner.fallback(url, uploader),
+            uploader = uploader,
             thumbnail = info.thumbnail,
             durationSec = info.duration.toLong().takeIf { it > 0 },
-            platform = Platform.detect(url),
+            platform = platform,
             options = options,
             sourceTitle = info.title.orEmpty(),
             infoPath = infoFile?.let { f -> f.absolutePath.takeIf { usable(f) } },

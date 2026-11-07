@@ -1,9 +1,14 @@
 package com.sahedul.clipsave.core
 
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 /**
  * Turns what a site reports as a video's title into a sensible file name. Facebook prefixes its titles with
  * counters ("1.2K views · 345 reactions | …"), and Instagram, TikTok and X use the whole caption, so those
- * are trimmed to their first few words; anything unusable gets a plain fallback like "Facebook video".
+ * are trimmed to their first few words; anything unusable gets a fallback: "Video by <uploader>", or the site's
+ * name with the time when no uploader is known, so two such videos never share a name.
  */
 object TitleCleaner {
     /** Roughly how much of a caption is kept, cut at a word boundary. */
@@ -26,7 +31,8 @@ object TitleCleaner {
     private val space = Regex("""\s+""")
 
     /** The file name to offer for [raw], never empty. */
-    fun name(raw: String?, link: String): String = clean(raw, Platform.detect(link)) ?: fallback(link)
+    fun name(raw: String?, link: String, uploader: String? = null, nowMs: Long = System.currentTimeMillis()): String =
+        clean(raw, Platform.detect(link)) ?: fallback(link, uploader, nowMs)
 
     /** [raw] without counters and cut to its first words, or null when nothing meaningful is left. */
     fun clean(raw: String?, platform: Platform): String? {
@@ -38,10 +44,13 @@ object TitleCleaner {
         return if (platform in realTitles) text else firstWords(text)
     }
 
-    fun fallback(link: String): String {
+    /** "Video by <uploader>" when the uploader is known, else e.g. "Instagram video 2026-11-07 19.52.03". */
+    fun fallback(link: String, uploader: String? = null, nowMs: Long = System.currentTimeMillis()): String {
+        uploader?.trim()?.takeIf { it.isNotEmpty() }?.let { return "Video by ${it.take(MAX_CHARS)}" }
         val platform = Platform.detect(link)
-        val site = if (platform == Platform.OTHER) hostOf(link) else platform.label
-        return if (site.isNullOrBlank()) "Video" else "$site video"
+        val site = (if (platform == Platform.OTHER) hostOf(link) else platform.label)?.takeIf { it.isNotBlank() }
+        val time = SimpleDateFormat("yyyy-MM-dd HH.mm.ss", Locale.US).format(Date(nowMs))
+        return "${site ?: "Video"}${if (site != null) " video" else ""} $time"
     }
 
     /** Drops "12K views · 3 reactions" parts, whether they lead the title or sit in their own `|` section. */

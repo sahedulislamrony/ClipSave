@@ -12,6 +12,7 @@ import com.sahedul.clipsave.core.Numbering
 import com.sahedul.clipsave.core.PlaylistInfo
 import com.sahedul.clipsave.core.UrlParser
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -51,10 +52,12 @@ class ExtractViewModel(app: Application) : AndroidViewModel(app) {
         val playlist = !single && UrlParser.isYoutubePlaylist(url)
         _state.value = ExtractState.Loading(url, if (playlist) null else LinkPreview.instant(url))
         job = viewModelScope.launch {
+            // Also handed to fetch, which falls back on its caption when yt-dlp's title is generic.
+            val previewRead = if (playlist) null else async { container.extractor.preview(url) }
             if (!playlist) {
                 // Show what the link is within a moment instead of a bare spinner for the whole yt-dlp run.
                 launch {
-                    val preview = container.extractor.preview(url) ?: return@launch
+                    val preview = previewRead?.await() ?: return@launch
                     val now = _state.value as? ExtractState.Loading ?: return@launch
                     // Keep a thumbnail already on screen rather than swap it for another size of the same image.
                     if (now.url == url) _state.value = now.copy(preview = preview.copy(thumbnail = now.preview?.thumbnail ?: preview.thumbnail))
@@ -73,7 +76,7 @@ class ExtractViewModel(app: Application) : AndroidViewModel(app) {
                     )
                     return@launch
                 }
-                val info = container.extractor.fetch(url)
+                val info = container.extractor.fetch(url) { previewRead?.await() }
                 val preferred = container.prefs.defaultQuality
                 // "One tap" mode: skip the picker and start with the saved default quality.
                 val auto = if (preferred != "ask") FormatOption.pick(info.options, preferred) else null
