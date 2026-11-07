@@ -25,7 +25,7 @@ class DownloadScheduler(
 ) {
     fun enqueue(info: MediaInfo, option: FormatOption, fileName: String? = null): String {
         val id = UUID.randomUUID().toString()
-        val name = fileName?.let(::sanitizeFileName)?.takeIf { it.isNotEmpty() && it != sanitizeFileName(info.title) }
+        val name = fileName?.let(::sanitizeFileName)?.takeIf { it.isNotEmpty() && it != sanitizeFileName(info.sourceTitle) }
         repo.add(
             DownloadItem(
                 id = id,
@@ -39,6 +39,7 @@ class DownloadScheduler(
                 audioFormat = option.audioFormat,
                 createdAt = System.currentTimeMillis(),
                 customName = name,
+                infoPath = info.infoPath,
             ),
         )
         start(id)

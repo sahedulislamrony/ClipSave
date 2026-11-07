@@ -9,6 +9,10 @@ data class MediaInfo(
     val durationSec: Long?,
     val platform: Platform,
     val options: List<FormatOption>,
+    /** The title as the site reported it, before [TitleCleaner]; what yt-dlp would name the file by itself. */
+    val sourceTitle: String = title,
+    /** yt-dlp's full read of this link, saved so the download can skip reading it again; null when not kept. */
+    val infoPath: String? = null,
 )
 
 /** What the sheet shows while [MediaInfo] is still being read. Any field may be missing. */

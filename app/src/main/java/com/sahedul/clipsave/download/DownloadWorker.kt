@@ -3,13 +3,16 @@ package com.sahedul.clipsave.download
 import android.content.Context
 import android.content.pm.ServiceInfo
 import android.os.Build
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkInfo
 import androidx.work.WorkerParameters
 import com.sahedul.clipsave.ClipSaveApp
+import com.sahedul.clipsave.core.Extractor
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLException
+import com.yausername.youtubedl_android.YoutubeDLRequest
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
@@ -116,6 +119,7 @@ class DownloadWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(c
             repo.update(id) {
                 it.copy(status = DownloadStatus.DONE, progress = 1f, outputUri = saved.first().uri.toString(), mimeType = saved.first().mime)
             }
+            item.infoPath?.let { File(it).delete() }
             return Outcome.Saved(saved.first().uri.toString(), saved.first().mime)
         } catch (e: CancellationException) {
             keepPartial = repo.get(id)?.status == DownloadStatus.PAUSED
@@ -141,7 +145,10 @@ class DownloadWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(c
     }
 
     private suspend fun runYtDlp(item: DownloadItem, workDir: File, notificationId: Int, label: String) = coroutineScope {
-        val request = container.extractor.baseRequest(item.url).apply {
+        fun request(infoFile: File?) = container.extractor.baseRequest(item.url).apply {
+            // The read made when the quality list was built; skips reading the link a second time.
+            // yt-dlp itself falls back to the link if the saved links no longer work.
+            infoFile?.let { addOption("--load-info-json", it.absolutePath) }
             addOption("-f", item.selector)
             addOption("-S", "res,vcodec:h264,acodec:m4a")
             addOption("--concurrent-fragments", "4")
@@ -167,22 +174,32 @@ class DownloadWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(c
             try { awaitCancellation() } finally { if (!done.get()) YoutubeDL.getInstance().destroyProcessById(item.id) }
         }
         var lastUi = 0L
+        fun run(request: YoutubeDLRequest) = YoutubeDL.getInstance().execute(request, item.id) { progress, etaSec, _ ->
+            val now = System.currentTimeMillis()
+            if (now - lastUi < 400) return@execute
+            lastUi = now
+            val fraction = (progress / 100f).takeIf { it in 0f..1f }
+            container.downloads.update(item.id) { it.copy(progress = fraction ?: it.progress, etaSec = etaSec.takeIf { e -> e > 0 }) }
+            Notifications.update(
+                applicationContext, notificationId,
+                Notifications.progress(
+                    applicationContext, label,
+                    fraction?.let { (it * 100).toInt() },
+                    etaSec.takeIf { it > 0 }?.let { "${it}s left" },
+                ),
+            )
+        }
+        val saved = item.infoPath?.let(::File)?.takeIf { it.isFile && System.currentTimeMillis() - it.lastModified() < Extractor.INFO_FRESH_MS }
         try {
             withContext(Dispatchers.IO) {
-                YoutubeDL.getInstance().execute(request, item.id) { progress, etaSec, _ ->
-                    val now = System.currentTimeMillis()
-                    if (now - lastUi < 400) return@execute
-                    lastUi = now
-                    val fraction = (progress / 100f).takeIf { it in 0f..1f }
-                    container.downloads.update(item.id) { it.copy(progress = fraction ?: it.progress, etaSec = etaSec.takeIf { e -> e > 0 }) }
-                    Notifications.update(
-                        applicationContext, notificationId,
-                        Notifications.progress(
-                            applicationContext, label,
-                            fraction?.let { (it * 100).toInt() },
-                            etaSec.takeIf { it > 0 }?.let { "${it}s left" },
-                        ),
-                    )
+                try {
+                    run(request(saved))
+                } catch (e: Exception) {
+                    // A pause or cancel kills the process and lands here too; only a real failure is retried.
+                    val status = container.downloads.get(item.id)?.status
+                    if (saved == null || e is CancellationException || status == DownloadStatus.PAUSED || status == DownloadStatus.CANCELED) throw e
+                    Log.w("DownloadWorker", "saved info failed, reading the link again: ${e.message}")
+                    run(request(null))
                 }
             }
         } finally {

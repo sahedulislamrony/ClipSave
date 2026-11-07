@@ -29,6 +29,8 @@ data class DownloadItem(
     val folder: String? = null,
     /** Playlist items share one id and download one after another in a single worker. */
     val batchId: String? = null,
+    /** yt-dlp's saved read of [url] (`--load-info-json`); only used while fresh, else the link is read again. */
+    val infoPath: String? = null,
 ) {
     val isActive get() = status == DownloadStatus.QUEUED || status == DownloadStatus.RUNNING || status == DownloadStatus.PROCESSING
 
