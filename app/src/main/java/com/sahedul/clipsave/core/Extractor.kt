@@ -17,11 +17,17 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
+import java.util.UUID
 
 class ExtractFailure(message: String, val needsLogin: Boolean = false) : Exception(message)
 
 /** Resolves a shared link into title/thumbnail/available qualities using yt-dlp. */
 class Extractor(private val engine: Engine, private val cookies: CookieStore, private val cacheDir: File) {
+    companion object {
+        /** Signed media links last hours; this is how long a saved read is trusted, and kept at most. */
+        const val INFO_FRESH_MS = 30L * 60 * 1000
+        private const val INFO_KEEP_MS = 3L * 3600 * 1000
+    }
 
     fun baseRequest(url: String, playlist: Boolean = false): YoutubeDLRequest = YoutubeDLRequest(url).apply {
         if (!playlist) addOption("--no-playlist")
@@ -35,6 +41,8 @@ class Extractor(private val engine: Engine, private val cookies: CookieStore, pr
 
     suspend fun fetch(url: String): MediaInfo = withContext(Dispatchers.IO) {
         val started = System.currentTimeMillis()
+        // YouTube's quick read leaves out the signed links a download needs, so only other sites keep theirs.
+        val infoFile = if (Platform.detect(url) == Platform.YOUTUBE) null else newInfoFile()
         val info = if (Platform.detect(url) == Platform.YOUTUBE) {
             // Solving YouTube's player challenge in QuickJS is ~2/3 of a fetch (16 of 24 s on a phone), but
             // the picker only needs heights and sizes, which come without it. Downloads still solve it.
@@ -49,7 +57,12 @@ class Extractor(private val engine: Engine, private val cookies: CookieStore, pr
             fast?.takeIf { f -> f.formats.orEmpty().any { (it.vcodec ?: "none") != "none" && it.height > 0 } }
                 ?: ytDlp { YoutubeDL.getInstance().getInfo(baseRequest(url)) }
         } else {
-            ytDlp { YoutubeDL.getInstance().getInfo(baseRequest(url)) }
+            ytDlp {
+                YoutubeDL.getInstance().getInfo(baseRequest(url).apply {
+                    // Also written to a file, so the download can start from it instead of reading the link again.
+                    infoFile?.let { addCommands(listOf("--print-to-file", "%()j", it.absolutePath)) }
+                })
+            }
         }
         Log.d("Extractor", "fetched in ${System.currentTimeMillis() - started} ms")
 
@@ -75,13 +88,38 @@ class Extractor(private val engine: Engine, private val cookies: CookieStore, pr
 
         MediaInfo(
             url = url,
-            title = info.title?.takeIf { it.isNotBlank() } ?: hostOf(url) ?: "Video",
+            title = TitleCleaner.name(info.title, url),
             uploader = info.uploader,
             thumbnail = info.thumbnail,
             durationSec = info.duration.toLong().takeIf { it > 0 },
             platform = Platform.detect(url),
             options = options,
+            sourceTitle = info.title.orEmpty(),
+            infoPath = infoFile?.let { f -> f.absolutePath.takeIf { usable(f) } },
         )
+    }
+
+    private val infoDir get() = File(cacheDir, "info")
+
+    /** A fresh path for yt-dlp to write its read of a link to; files from earlier reads are cleared out. */
+    private fun newInfoFile(): File {
+        val dir = infoDir.apply { mkdirs() }
+        val cutoff = System.currentTimeMillis() - INFO_KEEP_MS
+        dir.listFiles()?.forEach { if (it.lastModified() < cutoff) it.delete() }
+        return File(dir, "${UUID.randomUUID()}.json")
+    }
+
+    /**
+     * Whether [file] holds one video's info as a single JSON object. A carousel comes out as several
+     * objects or one with entries; those are left to be read again, as before. Unusable files are deleted.
+     */
+    private fun usable(file: File): Boolean {
+        val ok = runCatching {
+            val root = Json.parseToJsonElement(file.readText()).jsonObject
+            "entries" !in root && ("formats" in root || "url" in root)
+        }.getOrDefault(false)
+        if (!ok) file.delete()
+        return ok
     }
 
     /**
@@ -90,8 +128,9 @@ class Extractor(private val engine: Engine, private val cookies: CookieStore, pr
      * Only for showing something while [fetch] runs; null when there's nothing to read or the request fails.
      */
     suspend fun preview(url: String): LinkPreview? = withContext(Dispatchers.IO) {
+        val platform = Platform.detect(url)
         runCatching {
-            when (val platform = Platform.detect(url)) {
+            when (platform) {
                 Platform.INSTAGRAM -> UrlParser.instagramShortcode(url)?.let {
                     EmbedPage.instagram(get("https://www.instagram.com/p/$it/embed/captioned/", EmbedPage.READ_CHARS))
                 }
@@ -103,7 +142,7 @@ class Extractor(private val engine: Engine, private val cookies: CookieStore, pr
                         .takeIf { it.title != null || it.thumbnail != null }
                 }
             }
-        }.getOrNull()
+        }.getOrNull()?.let { it.copy(title = TitleCleaner.clean(it.title, platform)) }
     }
 
     private val oEmbed = mapOf(

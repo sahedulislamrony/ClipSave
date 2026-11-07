@@ -6,6 +6,21 @@ All notable changes to ClipSave are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-11-07
+
+### Changed
+- File names are tidier: Facebook's view, reaction and comment counts are dropped from the name, long captions
+  (Instagram, TikTok, X and others) keep only their first few words, and a link with no usable title is saved as
+  `Facebook video`, `Instagram video` and so on. YouTube, Vimeo and Dailymotion titles are kept as they are.
+- Instagram, Facebook, TikTok and other non-YouTube downloads start sooner: the app reuses its first read of the
+  link instead of reading it again when the download begins (and falls back to reading it again if that fails).
+
+### Fixed
+- The "Download complete" and "Download failed" notifications for a single video were removed together with the
+  progress notification, so they never showed.
+- Notifications show the full-colour ClipSave logo as their large icon; the small status-bar icon stays a
+  one-colour mark, as Android requires.
+
 ## [1.3.2] - 2026-10-30
 
 ### Changed
@@ -88,7 +103,8 @@ First public release.
 - Terms of Use and disclaimer (`TERMS.md`), agreed on first launch and readable under Settings → Other → Terms.
 - Signed per-ABI release APKs, `build.sh`, and a GitHub Actions release workflow.
 
-[Unreleased]: https://github.com/sahedulislamrony/ClipSave/compare/v1.3.2...HEAD
+[Unreleased]: https://github.com/sahedulislamrony/ClipSave/compare/v1.3.3...HEAD
+[1.3.3]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.3
 [1.3.2]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.2
 [1.3.1]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.1
 [1.3.0]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.0
