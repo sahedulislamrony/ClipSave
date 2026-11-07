@@ -6,8 +6,11 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.net.Uri
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.core.app.NotificationManagerCompat
 import com.sahedul.clipsave.R
 import com.sahedul.clipsave.ui.MainActivity
@@ -40,6 +43,12 @@ object Notifications {
 
     fun idFor(downloadId: String) = downloadId.hashCode()
 
+    /**
+     * Where "saved" and "failed" go. Not [idFor]: that id belongs to the worker's foreground notification,
+     * which Android removes when the worker ends, taking a result posted under it along.
+     */
+    private fun resultId(downloadId: String) = idFor("$downloadId-result")
+
     /** Ongoing progress; tapping opens the Downloads tab, where pausing and canceling live. */
     fun progress(context: Context, title: String, percent: Int?, text: String?): Notification =
         builder(context, CHANNEL_PROGRESS)
@@ -60,7 +69,7 @@ object Notifications {
             .setAutoCancel(true)
             .setContentIntent(if (uri != null) openFile(context, uri, mime) else openDownloads(context))
             .build()
-        notify(context, idFor(downloadId), n)
+        notify(context, resultId(downloadId), n)
     }
 
     fun failed(context: Context, downloadId: String, title: String, reason: String?) {
@@ -71,13 +80,28 @@ object Notifications {
             .setAutoCancel(true)
             .setContentIntent(openDownloads(context))
             .build()
-        notify(context, idFor(downloadId), n)
+        notify(context, resultId(downloadId), n)
     }
 
-    /** Every notification carries the white ClipSave mark on the brand colour. */
+    /**
+     * Android draws the small icon as a one-colour silhouette (gray in the shade on many phones), so the
+     * full-colour logo goes in the large icon, which is shown as it is.
+     */
     private fun builder(context: Context, channel: String) = NotificationCompat.Builder(context, channel)
         .setSmallIcon(R.drawable.ic_stat_clipsave)
         .setColor(BRAND)
+        .setLargeIcon(logo(context))
+
+    @Volatile private var logoBitmap: Bitmap? = null
+
+    private fun logo(context: Context): Bitmap? = logoBitmap ?: runCatching {
+        val size = 192
+        val icon = ContextCompat.getDrawable(context, R.mipmap.ic_launcher)!!
+        Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888).also {
+            icon.setBounds(0, 0, size, size)
+            icon.draw(Canvas(it))
+        }
+    }.getOrNull()?.also { logoBitmap = it }
 
     /** One summary per playlist instead of a notification per video. */
     fun batchFinished(context: Context, batchId: String, folder: String, saved: Int, failed: Int) {
@@ -97,8 +121,11 @@ object Notifications {
 
     fun update(context: Context, id: Int, n: Notification) = notify(context, id, n)
 
-    fun cancel(context: Context, downloadId: String) =
-        NotificationManagerCompat.from(context).cancel(idFor(downloadId))
+    fun cancel(context: Context, downloadId: String) {
+        val mgr = NotificationManagerCompat.from(context)
+        mgr.cancel(idFor(downloadId))
+        mgr.cancel(resultId(downloadId))
+    }
 
     @Suppress("MissingPermission")
     private fun notify(context: Context, id: Int, n: Notification) {
