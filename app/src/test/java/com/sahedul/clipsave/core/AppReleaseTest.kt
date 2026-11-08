@@ -14,6 +14,18 @@ class AppReleaseTest {
             GithubRelease.Asset("SHA256SUMS.txt", 1, "https://example.com/sums"),
     )
 
+    @Test fun `assets with a path in the name or a non-https link are ignored`() {
+        fun only(name: String, url: String) =
+            GithubRelease("v1.2.0", listOf(GithubRelease.Asset(name, 1, url)))
+        assertNull(AppRelease.assetFor(only("../../files/ClipSave-1.2.0-universal.apk", "https://example.com/a"), "universal"))
+        assertNull(AppRelease.assetFor(only("a/ClipSave-1.2.0-universal.apk", "https://example.com/a"), "universal"))
+        assertNull(AppRelease.assetFor(only("ClipSave-1.2.0-universal.apk", "http://example.com/a"), "universal"))
+        assertEquals(
+            "ClipSave-1.2.0-universal.apk",
+            AppRelease.assetFor(only("ClipSave-1.2.0-universal.apk", "https://example.com/a"), "universal")?.name,
+        )
+    }
+
     @Test fun `newer versions are detected`() {
         assertTrue(AppRelease.isNewer("1.0.1", "1.0.0"))
         assertTrue(AppRelease.isNewer("v1.1.0", "1.0.9"))

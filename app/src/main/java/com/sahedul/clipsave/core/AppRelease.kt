@@ -34,9 +34,18 @@ object AppRelease {
 
     /** The asset for the installed [variant], falling back to universal when that split is missing. */
     fun assetFor(release: GithubRelease, variant: String): GithubRelease.Asset? {
-        fun find(v: String) = release.assets.firstOrNull { it.name.endsWith("-$v.apk") }
+        fun find(v: String) = release.assets.firstOrNull { it.name.endsWith("-$v.apk") && isSafe(it) }
         return find(variant) ?: find(UNIVERSAL)
     }
+
+    private val safeName = Regex("[A-Za-z0-9._-]+")
+
+    /**
+     * The updater uses the asset's name as a file name and its URL as the download address, so accept only a plain
+     * file name (no path separators) and an https link, whatever the release JSON says.
+     */
+    fun isSafe(asset: GithubRelease.Asset): Boolean =
+        safeName.matches(asset.name) && ".." !in asset.name && asset.url.startsWith("https://")
 
     /** True when [latest] is a newer version than [current] (semver; a pre-release sorts before its release). */
     fun isNewer(latest: String, current: String): Boolean = compare(latest, current) > 0

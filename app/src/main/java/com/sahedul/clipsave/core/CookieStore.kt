@@ -46,10 +46,16 @@ class CookieStore(context: Context) {
 
     fun clear(site: Site) {
         file(site).delete()
+        // The merged copy holds the same session values; don't leave it behind once nothing needs it.
+        if (Site.entries.none { isLoggedIn(it) }) merged.delete() else mergedFileOrNull()
         val manager = CookieManager.getInstance()
         site.cookieUrls.forEach { url ->
             manager.getCookie(url)?.split(";")?.forEach { c ->
-                manager.setCookie(url, "${c.substringBefore('=').trim()}=; Max-Age=0")
+                val name = c.substringBefore('=').trim()
+                // A cookie set with Domain=.site.com is only replaced by one that names the same domain and
+                // path; without the attributes only a host-only cookie would be expired. Do both.
+                manager.setCookie(url, "$name=; Max-Age=0; Path=/")
+                manager.setCookie(url, "$name=; Max-Age=0; Path=/; Domain=${site.domain}")
             }
         }
         manager.flush()
@@ -58,7 +64,10 @@ class CookieStore(context: Context) {
     /** Path of a cookie file combining every saved site, or null when the user never logged in. */
     fun mergedFileOrNull(): File? {
         val files = Site.entries.map(::file).filter { it.exists() && it.length() > 0 }
-        if (files.isEmpty()) return null
+        if (files.isEmpty()) {
+            merged.delete()
+            return null
+        }
         val text = buildString {
             append("# Netscape HTTP Cookie File\n")
             files.forEach { f -> f.readLines().filter { !it.startsWith("#") && it.isNotBlank() }.forEach { append(it).append('\n') } }

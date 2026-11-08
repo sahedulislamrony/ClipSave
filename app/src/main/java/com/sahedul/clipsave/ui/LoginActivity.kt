@@ -90,8 +90,9 @@ class LoginActivity : ComponentActivity() {
                                 webViewClient = object : WebViewClient() {
                                     // Facebook bounces to app-handoff schemes (e.g. sfilvavs://login_via_app)
                                     // that WebView can't load. Swallow them so the web login form stays up.
+                                    // Plain http is refused too: this page handles a password and session cookies.
                                     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) =
-                                        request.url.scheme !in setOf("http", "https")
+                                        request.url.scheme != "https"
                                 }
                                 loadUrl(site.loginUrl)
                             }
