@@ -6,6 +6,17 @@ All notable changes to ClipSave are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.3.5] - 2026-11-08
+
+### Security
+- Signing out of Instagram or Facebook now removes the saved session cookies for good: a combined copy was left in
+  the app's private storage after the last sign-out, and the sign-in page's own cookies for the whole site were
+  not always cleared.
+- The in-app updater only accepts a release file with a plain file name and an `https` download link.
+- The app no longer allows plain `http` connections, and the sign-in page refuses to open `http` pages. A
+  thumbnail served over `http` is not shown.
+- The release workflow only runs from `main`.
+
 ## [1.3.4] - 2026-11-07
 
 ### Fixed
@@ -113,7 +124,8 @@ First public release.
 - Terms of Use and disclaimer (`TERMS.md`), agreed on first launch and readable under Settings → Other → Terms.
 - Signed per-ABI release APKs, `build.sh`, and a GitHub Actions release workflow.
 
-[Unreleased]: https://github.com/sahedulislamrony/ClipSave/compare/v1.3.4...HEAD
+[Unreleased]: https://github.com/sahedulislamrony/ClipSave/compare/v1.3.5...HEAD
+[1.3.5]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.5
 [1.3.4]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.4
 [1.3.3]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.3
 [1.3.2]: https://github.com/sahedulislamrony/ClipSave/releases/tag/v1.3.2
